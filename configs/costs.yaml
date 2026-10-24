@@ -1,0 +1,12 @@
+# VERIFY every number below on your broker's charges page / exchange circulars.
+# Rates are fractions of trade value (0.00025 = 0.025%).
+segment: equity_intraday
+brokerage:
+  pct: 0.0003
+  max_per_order_inr: 20
+stt_sell_pct: 0.00025
+exchange_txn_pct: 0.0000297
+sebi_pct: 0.000001
+stamp_buy_pct: 0.00003
+gst_pct: 0.18            # on brokerage + exchange + sebi charges
+slippage_bps: 2          # assumption, tune in backtest

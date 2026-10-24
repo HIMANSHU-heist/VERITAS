@@ -1,0 +1,6 @@
+max_position_pct: 2.0        # per trade, % of capital
+risk_per_trade_pct: 1.0
+daily_loss_limit_pct: 2.0
+max_drawdown_pct: 8.0
+max_orders_per_second: 5     # internal cap, below the retail threshold
+starting_capital_inr: 1000000
