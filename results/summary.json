@@ -47,8 +47,8 @@
     "lines": 544
   },
   "edge_stats": {
-    "max_edge_pct": 0.3642,
-    "median_edge_pct": 0.1157,
+    "max_edge_pct": 0.7381,
+    "median_edge_pct": -0.0476,
     "round_trip_cost_pct": 0.146,
     "days_edge_above_cost": 94
   }

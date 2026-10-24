@@ -14,6 +14,7 @@ from collections import Counter
 import joblib
 import numpy as np
 import yaml
+from sklearn.isotonic import IsotonicRegression
 
 from python.dataclock import load_frozen
 from python.ml.conformal import calibrate, prediction_sets
@@ -39,6 +40,7 @@ def load_setup():
         "te": te, "feats": feats, "nifty": nifty,
         "p_ca": model.predict_proba(ca[feats]), "y_ca": ca["y"].values,
         "p_te": model.predict_proba(te[feats]),
+        "ret_ca": ca["ret_oc"].values * 100,
         "avg_move": float(bundle["avg_abs_ret_pct"]),
     }
 
@@ -64,11 +66,17 @@ def summarize(daily_net, trades, capital, pos_val):
     }
 
 
-def run_backtest(alpha=0.10, setup=None, write=False, tag="main"):
+def run_backtest(alpha=0.10, setup=None, write=False, tag="main", edge_mode="calibrated"):
     s = setup or load_setup()
     te, p_te = s["te"], s["p_te"]
     q = calibrate(s["p_ca"], s["y_ca"], alpha)
     sets = prediction_sets(p_te, q)
+
+    # Edge calibration: fit ONLY on the calibration window (test window untouched)
+    p_ca_up = s["p_ca"][:, 1]
+    conf_ca = np.abs(2 * p_ca_up - 1)
+    dir_ret_ca = np.where(p_ca_up >= 0.5, 1, -1) * s["ret_ca"]      # realized % return in model's direction
+    iso = IsotonicRegression(increasing=True, out_of_bounds="clip").fit(conf_ca, dir_ret_ca)
 
     limits = yaml.safe_load(open(ROOT / "configs" / "limits.yaml"))
     capital = float(limits["starting_capital_inr"])
@@ -84,7 +92,11 @@ def run_backtest(alpha=0.10, setup=None, write=False, tag="main"):
 
     for i, row in te.iterrows():
         p_up = float(p_te[i, 1])
-        edge = abs(2 * p_up - 1) * s["avg_move"]          # % expected move
+        conf = abs(2 * p_up - 1)
+        if edge_mode == "calibrated":
+            edge = float(iso.predict([conf])[0])               # realized-edge estimate (% per trade)
+        else:
+            edge = conf * s["avg_move"]                        # old naive formula
         single = int(sets[i].sum()) == 1
         side = (1 if sets[i].argmax() == 1 else -1) if single else (1 if p_up >= 0.5 else -1)
         price = float(row["prev_close"]) / ETF_DIVISOR
@@ -224,6 +236,9 @@ def main():
     setup = load_setup()
     main_res = run_backtest(0.10, setup=setup, write=True, tag="main")
     print_report(main_res)
+    naive = run_backtest(0.10, setup=setup, write=False, tag="naive", edge_mode="naive")
+    print(f"\nOld naive edge formula, same alpha: trades={naive['gated']['n_trades']} "
+          f"net P&L={naive['gated']['net_pnl']:.2f} INR")
     print("\nSensitivity (same test window; main result above is alpha=0.10, fixed in advance):")
     print(f"{'alpha':>6} {'trades':>7} {'abstain%':>9} {'net P&L INR':>12}")
     for a in (0.05, 0.10, 0.20, 0.30):
