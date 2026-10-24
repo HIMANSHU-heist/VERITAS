@@ -1,0 +1,3 @@
+fast: openai/gpt-oss-20b
+strong: openai/gpt-oss-120b
+guard: meta-llama/llama-prompt-guard-2-86m
