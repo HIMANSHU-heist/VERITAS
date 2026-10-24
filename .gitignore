@@ -7,3 +7,4 @@ cpp/build/
 data/raw/
 *.log
 .DS_Store
+audit/
