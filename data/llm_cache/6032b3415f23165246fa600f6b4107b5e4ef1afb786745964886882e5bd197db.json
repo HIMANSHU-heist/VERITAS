@@ -1,0 +1,1 @@
+{"model": "openai/gpt-oss-120b", "text": "{\"objections\":[{\"text\":\"Edge is only 0.180% of position value (18 basis points), which is negligible relative to the 18% position size\",\"severity\":\"HIGH\"},{\"text\":\"Model probability of up move is 0.739, not a strong enough signal for such a large allocation\",\"severity\":\"MED\"}],\"recommend_veto\":true}"}

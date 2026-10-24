@@ -1,0 +1,1 @@
+{"model": "openai/gpt-oss-20b", "text": "{\"score\":0.173,\"confidence\":0.173,\"top_drivers\":[\"CRUDE_ret1\",\"GOLD_ret1\",\"SP500_ret1\"],\"reason\":\"All listed drivers have directions that push the signal score upward.\"}"}

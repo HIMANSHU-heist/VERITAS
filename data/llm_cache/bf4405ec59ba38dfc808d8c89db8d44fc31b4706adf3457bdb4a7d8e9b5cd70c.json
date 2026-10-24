@@ -1,0 +1,1 @@
+{"model": "openai/gpt-oss-120b", "text": "{\"objections\":[{\"text\":\"size_pct is 0.18 (18% of portfolio) but edge_text states \\\"0.180% of position value (18 basis points)\\\", a mismatch in position sizing\",\"severity\":\"HIGH\"}],\"recommend_veto\":true}"}

@@ -1,0 +1,1 @@
+{"model": "openai/gpt-oss-20b", "text": "{\"score\":-0.135,\"confidence\":0.135,\"top_drivers\":[\"NIKKEI_ret1\",\"CRUDE_ret1\",\"USDINR_ret1\"],\"reason\":\"The signal score of -0.135 is driven by a positive NIKKEI_ret1 (+0.0217) pushing the score up, while a negative CRUDE_ret1 (-0.0340) and a positive USDINR_ret1 (+0.0078) both push the score down.\"}"}

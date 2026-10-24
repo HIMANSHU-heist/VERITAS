@@ -1,0 +1,1 @@
+{"model": "openai/gpt-oss-120b", "text": "{\"objections\":[{\"text\":\"Edge of 0.180% of position value (18 basis points) is extremely small and may be eaten by transaction costs and slippage\",\"severity\":\"MED\"}],\"recommend_veto\":false}"}

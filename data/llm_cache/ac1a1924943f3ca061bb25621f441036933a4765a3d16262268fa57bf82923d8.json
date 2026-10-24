@@ -1,0 +1,1 @@
+{"model": "openai/gpt-oss-120b", "text": "{\"objections\":[{\"text\":\"The proposal size_pct is 0.153 (15.3% of portfolio) but the thesis states \\\"0.153% of position value (15 basis points)\\\", a mismatch in units and magnitude.\",\"severity\":\"MED\"}],\"recommend_veto\":false}"}

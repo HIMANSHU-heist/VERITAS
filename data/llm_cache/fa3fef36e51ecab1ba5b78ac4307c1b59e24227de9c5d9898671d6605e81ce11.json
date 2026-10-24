@@ -1,0 +1,1 @@
+{"model": "openai/gpt-oss-120b", "text": "{\"objections\":[{\"text\":\"The proposal size_pct is 0.18 (18% of portfolio) but the edge_text states \\\"0.180% of position value (18 basis points)\\\", indicating only 0.180% exposure. This inconsistency suggests the trade size is mis‑specified.\",\"severity\":\"HIGH\"}],\"recommend_veto\":true}"}

@@ -1,0 +1,1 @@
+{"model": "openai/gpt-oss-20b", "text": "{\"score\":-0.108,\"confidence\":0.108,\"top_drivers\":[\"SP500_ret1\",\"USDINR_ret1\",\"GOLD_ret1\"],\"reason\":\"The negative score is driven by the positive return of the S&P 500 and gold, which push the score down, while the negative return of USDINR pushes the score up.\"}"}

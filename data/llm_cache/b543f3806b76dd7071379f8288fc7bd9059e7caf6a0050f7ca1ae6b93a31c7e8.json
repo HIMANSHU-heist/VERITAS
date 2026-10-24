@@ -1,0 +1,1 @@
+{"model": "openai/gpt-oss-120b", "text": "{\"action\":\"SELL\",\"size_pct\":0.5,\"thesis\":\"Model predicts a SELL direction with a modest edge of 0.180% of position value; combined cues and low confidence suggest a cautious short exposure.\",\"evidence_ids\":[]}"}

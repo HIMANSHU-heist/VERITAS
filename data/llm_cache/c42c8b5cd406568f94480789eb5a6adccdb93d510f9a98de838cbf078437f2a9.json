@@ -1,0 +1,1 @@
+{"model": "openai/gpt-oss-120b", "text": "{\"action\":\"SELL\",\"size_pct\":0.2,\"thesis\":\"ML model predicts a SELL direction with a modest edge of 0.180% of position value, and cue analysis shows negative score driven by crude oil decline outweighing minor positive drivers.\",\"evidence_ids\":[]}"}

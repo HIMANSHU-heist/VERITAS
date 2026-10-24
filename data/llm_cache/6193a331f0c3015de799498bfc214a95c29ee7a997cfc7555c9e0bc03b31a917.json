@@ -1,0 +1,1 @@
+{"model": "openai/gpt-oss-20b", "text": "{\"score\":0.181,\"confidence\":0.181,\"top_drivers\":[\"CRUDE_ret1\",\"USDINR_ret1\",\"INDIAVIX_chg1\"],\"reason\":\"CRUDE_ret1 and INDIAVIX_chg1 push the score up, while USDINR_ret1 pushes it down.\"}"}

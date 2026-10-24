@@ -1,0 +1,1 @@
+{"model": "openai/gpt-oss-20b", "text": "{\"score\":-0.019,\"confidence\":0.019,\"top_drivers\":[\"NIKKEI_ret1\",\"INDIAVIX_chg1\",\"CRUDE_ret1\"],\"reason\":\"The negative score is primarily driven by the downward movement in NIKKEI_ret1, while the positive changes in INDIAVIX_chg1 and CRUDE_ret1 provide counterbalancing upward pressure.\"}"}

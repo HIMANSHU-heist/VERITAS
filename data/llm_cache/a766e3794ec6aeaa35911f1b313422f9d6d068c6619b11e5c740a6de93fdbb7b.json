@@ -1,0 +1,1 @@
+{"model": "openai/gpt-oss-120b", "text": "{\"action\":\"SELL\",\"size_pct\":0.153,\"thesis\":\"Model predicts a down move with a 0.286 probability up and a conformal set indicating DOWN; edge is 0.153% of position value (15 basis points).\",\"evidence_ids\":[]}"}

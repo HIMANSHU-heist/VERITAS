@@ -1,0 +1,1 @@
+{"model": "openai/gpt-oss-20b", "text": "{\"score\":0.009,\"confidence\":0.009,\"top_drivers\":[\"CRUDE_ret1\",\"INDIAVIX_chg1\",\"USDINR_ret1\"],\"reason\":\"The signal score of 0.009 is influenced positively by CRUDE_ret1 (+0.0325) and INDIAVIX_chg1 (+0.0614), while USDINR_ret1 (+0.0035) pushes the score down.\"}"}

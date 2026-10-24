@@ -1,0 +1,1 @@
+{"model": "openai/gpt-oss-120b", "text": "{\"objections\":[{\"text\":\"Edge of 0.153% of position value (15 basis points) is extremely small and may not cover transaction costs or justify the trade\",\"severity\":\"MED\"},{\"text\":\"Model up probability of 0.68 is modest; not a strong conviction\",\"severity\":\"LOW\"}],\"recommend_veto\":false}"}

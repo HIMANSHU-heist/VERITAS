@@ -1,0 +1,1 @@
+{"model": "openai/gpt-oss-20b", "text": "{\"score\":-0.018,\"confidence\":0.018,\"top_drivers\":[\"CRUDE_ret1\",\"GOLD_ret1\",\"INDIAVIX_chg1\"],\"reason\":\"The negative signal score is driven by a positive crude oil return pushing the score up, a positive gold return pulling it down, and a positive VIX change also pushing it up, resulting in a net slight downward movement.\"}"}

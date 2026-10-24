@@ -1,0 +1,1 @@
+{"model": "openai/gpt-oss-20b", "text": "{\"score\":-0.103,\"confidence\":0.103,\"top_drivers\":[\"GOLD_ret1\",\"INDIAVIX_chg1\",\"USDINR_ret1\"],\"reason\":\"The negative score is driven by a downward influence from INDIAVIX_chg1 and USDINR_ret1, while GOLD_ret1 provides a slight upward push, resulting in an overall negative market signal.\"}"}

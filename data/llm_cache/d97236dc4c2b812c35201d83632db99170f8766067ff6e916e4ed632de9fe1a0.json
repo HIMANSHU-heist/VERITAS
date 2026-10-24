@@ -1,0 +1,1 @@
+{"model": "openai/gpt-oss-120b", "text": "{\"objections\":[{\"text\":\"size_pct 0.153 (15.3% of position) does not match edge_text \\\"0.153% of position value (15 basis points)\\\" indicating a much smaller position size\",\"severity\":\"HIGH\"}],\"recommend_veto\":true}"}

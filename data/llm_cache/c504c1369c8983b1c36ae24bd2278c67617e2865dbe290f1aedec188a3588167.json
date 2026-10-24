@@ -1,0 +1,1 @@
+{"model": "openai/gpt-oss-120b", "text": "{\"objections\":[{\"text\":\"Edge is only 0.180% of position value (18 basis points), which is negligible and may not cover transaction costs\",\"severity\":\"MED\"},{\"text\":\"Cue score -0.179 with confidence 0.179 is very weak, providing limited support for the SELL thesis\",\"severity\":\"LOW\"}],\"recommend_veto\":false}"}

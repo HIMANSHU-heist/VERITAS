@@ -1,0 +1,1 @@
+{"model": "openai/gpt-oss-20b", "text": "{\"score\":-0.031,\"confidence\":0.031,\"top_drivers\":[\"NIKKEI_ret1\",\"CRUDE_ret1\",\"GOLD_ret1\"],\"reason\":\"NIKKEI_ret1 (+0.0155) and GOLD_ret1 (-0.0102) push the score up, while CRUDE_ret1 (-0.0232) pushes it down, resulting in a net negative score of -0.031.\"}"}

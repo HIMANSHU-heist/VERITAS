@@ -1,0 +1,1 @@
+{"model": "openai/gpt-oss-120b", "text": "{\"objections\":[{\"text\":\"size_pct is 0.738 (73.8% of portfolio) while the singleton edge is only 0.738% of position value (74 basis points), a mismatch suggesting the trade size vastly exceeds the expected edge\",\"severity\":\"HIGH\"}],\"recommend_veto\":true}"}

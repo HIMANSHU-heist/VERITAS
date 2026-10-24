@@ -1,0 +1,1 @@
+{"model": "openai/gpt-oss-20b", "text": "{\"score\":-0.002,\"confidence\":0.002,\"top_drivers\":[\"SP500_ret1\",\"GOLD_ret1\",\"CRUDE_ret1\"],\"reason\":\"The negative return of the S&P 500 and gold both push the market signal upward, while the negative crude oil return pushes it downward, resulting in a net slight downward shift.\"}"}

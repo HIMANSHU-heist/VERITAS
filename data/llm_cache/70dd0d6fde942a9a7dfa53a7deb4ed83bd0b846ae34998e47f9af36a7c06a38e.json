@@ -1,0 +1,1 @@
+{"model": "openai/gpt-oss-120b", "text": "{\"objections\":[{\"text\":\"Cue confidence is only 0.108, indicating a weak signal supporting the SELL thesis\",\"severity\":\"LOW\"},{\"text\":\"Model edge is modest at 0.180% of position value (18 basis points), offering limited upside potential\",\"severity\":\"LOW\"}],\"recommend_veto\":false}"}

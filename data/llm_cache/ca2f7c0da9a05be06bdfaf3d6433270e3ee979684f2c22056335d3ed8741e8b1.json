@@ -1,0 +1,1 @@
+{"model": "openai/gpt-oss-20b", "text": "{\"score\":0.085,\"confidence\":0.085,\"top_drivers\":[\"USDINR_ret1\",\"GOLD_ret1\",\"NIKKEI_ret1\"],\"reason\":\"USDINR_ret1 and GOLD_ret1 are negative, each pushing the signal score up, while NIKKEI_ret1 is negative and pushes the score down.\"}"}
