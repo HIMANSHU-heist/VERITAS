@@ -1,0 +1,1 @@
+{"model": "openai/gpt-oss-20b", "text": "{\"score\":0.35,\"confidence\":0.4,\"top_drivers\":[\"SP500_ret1=+0.8%\",\"CRUDE_ret1=-1.2%\",\"USDINR_ret1=+0.1%\"],\"reason\":\"Pre-computed market signal based on recent returns.\"}"}
