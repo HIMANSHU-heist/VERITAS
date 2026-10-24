@@ -1,0 +1,1 @@
+{"model": "openai/gpt-oss-20b", "text": "{\"score\":0.029,\"confidence\":0.029,\"top_drivers\":[\"NIKKEI_ret1=-0.0265\",\"SP500_ret1=-0.0121\",\"GOLD_ret1=-0.0216\"],\"reason\":\"The signal is low because the recent negative returns of the Nikkei, S&P 500, and gold have pulled the overall market sentiment down.\"}"}
