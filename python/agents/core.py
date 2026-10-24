@@ -36,7 +36,9 @@ def herding(scores):
     active = np.sign(s[np.abs(s) > 0.05])
     concordance = float(abs(active.sum()) / len(active)) if len(active) else 0.0
     dispersion = float(np.std(s))
-    disagreement = float(min(1.0, dispersion * 2))
+    act = s[np.abs(s) > 0.05]            # only meaningful scores can disagree
+    opposed = len(act) >= 2 and bool((act > 0).any() and (act < 0).any())
+    disagreement = float(min(1.0, float(np.std(act)) * 2)) if opposed else 0.0
     return {"concordance": round(concordance, 3), "dispersion": round(dispersion, 3),
             "disagreement": round(disagreement, 3), "risk_flag": disagreement > 0.6}
 
@@ -99,7 +101,8 @@ def news_agent(llm, items, as_of=None):
 
 
 STRAT_SYS = ("You are a cautious strategist for a PAPER-trading system. Combine the agent outputs into ONE proposal. "
-             "WAIT is always acceptable. size_pct must not exceed 2. "
+             "WAIT is always acceptable. You may only propose the direction in ml.direction, or WAIT. "
+             "size_pct must not exceed 2. Quote the edge exactly as written in ml.edge_text; never convert units. size_pct is percent of capital (0 to 2). "
              "Fields: action (BUY|SELL|WAIT), size_pct, thesis, evidence_ids.")
 
 
@@ -112,7 +115,7 @@ def strategy_agent(llm, cue, news, ml, her, as_of=None):
 
 
 RED_SYS = ("You are a red-team reviewer. Try to falsify the proposal using ONLY the evidence given. "
-           "edge_pct is in PERCENT (0.05 means 0.05%, not 5%). List concrete objections with severity LOW|MED|HIGH. Set recommend_veto=true only if the trade "
+           "Quote the edge exactly as written in ml.edge_text; never convert units. This run is price-only: there are no news items or evidence ids, and their absence is expected, NOT an objection. ml.p_up is the model probability of an up move. Object only to real problems in the data given. List concrete objections with severity LOW|MED|HIGH. Set recommend_veto=true only if the trade "
            "should not happen. Fields: objections (list of {text, severity}), recommend_veto.")
 
 

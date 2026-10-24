@@ -1,0 +1,1 @@
+{"model": "openai/gpt-oss-20b", "text": "{\"score\":-0.087,\"confidence\":0.087,\"top_drivers\":[\"SP500_ret1\",\"INDIAVIX_level\",\"USDINR_ret1\"],\"reason\":\"SP500_ret1 and INDIAVIX_level are positive, pushing the score down, while USDINR_ret1 is negative, pushing the score up.\"}"}

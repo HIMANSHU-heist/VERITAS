@@ -1,0 +1,26 @@
+{
+  "alpha": 0.1,
+  "n_days": 243,
+  "pipeline": {
+    "n_trades": 4,
+    "win_rate": 0.75,
+    "gross_pnl": 121.68,
+    "cost": 116.21,
+    "net_pnl": 5.47,
+    "net_bps_per_trade": 0.68,
+    "max_drawdown_inr": 110.64,
+    "max_drawdown_pct_capital": 0.011
+  },
+  "stats": {
+    "candidates": 50,
+    "llm_wait": 0,
+    "direction_mismatch": 0,
+    "redteam_veto": 1,
+    "llm_errors": 0,
+    "llm_skipped": 45
+  },
+  "audit": {
+    "audit": "OK",
+    "lines": 496
+  }
+}

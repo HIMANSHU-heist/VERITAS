@@ -1,0 +1,1 @@
+{"model": "openai/gpt-oss-120b", "text": "{\"objections\":[{\"text\":\"Cue score is negative (-0.06985337011884392) indicating slight negative momentum, which conflicts with the BUY thesis\",\"severity\":\"MED\"},{\"text\":\"Edge is only 0.153% of position value (15 basis points), a very small advantage\",\"severity\":\"LOW\"}],\"recommend_veto\":false}"}

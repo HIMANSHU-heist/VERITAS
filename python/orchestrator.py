@@ -22,3 +22,11 @@ def order_request(proposal, red, her, ml, price, vix, ts_ms, data_valid=True):
         "conformal_singleton": ml["singleton"], "disagreement": her["disagreement"],
         "redteam_severity": severity(red), "vix": vix, "ts_ms": ts_ms,
     }
+
+
+def reconcile(prop, ml_action):
+    """The LLM may agree with the ML direction or WAIT. It can never flip or originate a trade."""
+    if prop.action in ("WAIT", ml_action):
+        return prop, False
+    return prop.model_copy(update={"action": "WAIT", "size_pct": 0.0,
+                                   "thesis": "direction_mismatch: " + prop.thesis[:300]}), True
