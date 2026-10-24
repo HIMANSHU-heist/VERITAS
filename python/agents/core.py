@@ -60,11 +60,13 @@ class CueModel:
         pred = float(self.m.intercept_ + contrib.sum())
         score = float(np.tanh(pred / self.scale))
         order = np.argsort(-np.abs(contrib))[:3]
-        drivers = [f"{self.cols[i]}={float(row[self.cols[i]]):+.4f}" for i in order]
+        drivers = [f"{self.cols[i]}={float(row[self.cols[i]]):+.4f} -> pushes score "
+                   f"{'UP' if contrib[i] > 0 else 'DOWN'}" for i in order]
         return score, drivers
 
 
 CUE_SYS = ("You explain a pre-computed market signal in 1-2 sentences. Do not invent numbers or facts. "
+           "Use ONLY the UP/DOWN direction given for each driver; never infer direction yourself. "
            "Fields: score, confidence, top_drivers (list of strings), reason (string).")
 
 
@@ -110,11 +112,13 @@ def strategy_agent(llm, cue, news, ml, her, as_of=None):
 
 
 RED_SYS = ("You are a red-team reviewer. Try to falsify the proposal using ONLY the evidence given. "
-           "List concrete objections with severity LOW|MED|HIGH. Set recommend_veto=true only if the trade "
+           "edge_pct is in PERCENT (0.05 means 0.05%, not 5%). List concrete objections with severity LOW|MED|HIGH. Set recommend_veto=true only if the trade "
            "should not happen. Fields: objections (list of {text, severity}), recommend_veto.")
 
 
 def redteam_agent(llm, proposal, cue, news, ml, as_of=None):
+    if proposal.action == "WAIT":      # nothing to falsify, save quota
+        return RedTeamOut(objections=[], recommend_veto=False)
     user = json.dumps({"proposal": proposal.model_dump(), "cue": cue.model_dump(),
                        "news": news.model_dump(), "ml": ml}, ensure_ascii=False)
     return llm.call_json("strong", RED_SYS, user, RedTeamOut, as_of=as_of)
