@@ -8,3 +8,5 @@ data/raw/
 *.log
 .DS_Store
 audit/
+outbox/
+data/alerts_sent.jsonl
