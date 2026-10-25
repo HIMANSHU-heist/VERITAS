@@ -238,6 +238,10 @@ def main():
             s = snapshot(sym)
             if s:
                 snaps[k] = s
+    if a.simulate and not snaps:
+        snaps = {"NIFTY": {"price": 24500.0, "prev_close": 24800.0, "day": -1.2, "hour": -0.7},
+                 "VIX": {"price": 18.5, "prev_close": 16.0, "day": 15.6, "hour": 3.0}}
+        print("SIMULATE: market closed, using demo prices")
     trig = triggers(snaps, 0.0 if a.simulate else 1.0)
     market = [f"{k}: {s['price']} ({s['day']:+.2f}% day, {s['hour']:+.2f}% last hour)" for k, s in snaps.items()]
 
