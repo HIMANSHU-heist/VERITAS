@@ -45,6 +45,7 @@ jobs:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
           GMAIL_USER: ${{ secrets.GMAIL_USER }}
           GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          APP_URL: https://veritas-trading.web.app/subscribe.html
         run: |
           if [ "$SEND" = "true" ]; then FLAG="--send"; else FLAG=""; fi
           python -m python.alerts.run_alerts --cards data/live_cards.jsonl --phase morning --live $FLAG
