@@ -1,0 +1,63 @@
+name: evening-recap
+on:
+  schedule:
+    - cron: "45 10 * * 1-5"      # 10:45 UTC = 16:15 IST
+  workflow_dispatch:
+    inputs:
+      send:
+        description: "Actually send emails (false = dry-run)"
+        type: boolean
+        default: false
+permissions:
+  contents: write
+concurrency:
+  group: veritas-live
+  cancel-in-progress: false
+jobs:
+  evening:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      SEND: ${{ github.event_name == 'schedule' || inputs.send }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Build C++ risk engine
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y cmake nlohmann-json3-dev libssl-dev
+          cmake -S cpp -B cpp/build
+          cmake --build cpp/build
+      - name: Fresh market data
+        run: python python/download_data.py
+      - name: Settle with the real close
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+        run: python -m python.settle
+      - name: Emails
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          GMAIL_USER: ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+        run: |
+          if [ "$SEND" = "true" ]; then FLAG="--send"; else FLAG=""; fi
+          python -m python.alerts.run_alerts --cards data/live_cards.jsonl --phase evening --live $FLAG
+      - name: Save card
+        run: |
+          git config user.name "veritas-bot"
+          git config user.email "veritas-bot@users.noreply.github.com"
+          git add data/live_cards.jsonl data/live_audit web/data/today.json
+          git commit -m "settled card $(date -u +%F)" || echo "nothing to commit"
+          git push
+      - name: Deploy dashboard
+        continue-on-error: true
+        env:
+          SA: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          echo "$SA" > "$RUNNER_TEMP/sa.json"
+          export GOOGLE_APPLICATION_CREDENTIALS="$RUNNER_TEMP/sa.json"
+          npx --yes firebase-tools@15 deploy --only hosting --project veritas-trading

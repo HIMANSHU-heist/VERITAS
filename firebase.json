@@ -1,4 +1,8 @@
 {
-  "hosting": { "public": "web", "ignore": ["firebase.json", "**/.*"] },
+  "hosting": {
+    "public": "web",
+    "ignore": ["firebase.json", "**/.*"],
+    "headers": [{ "source": "/data/**", "headers": [{ "key": "Cache-Control", "value": "no-cache" }] }]
+  },
   "firestore": { "rules": "firestore.rules" }
 }

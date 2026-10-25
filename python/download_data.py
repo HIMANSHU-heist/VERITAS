@@ -38,3 +38,5 @@ for name, sym in TICKERS.items():
 
 print("OK:", ok)
 print("FAILED:", failed)
+if failed:
+    raise SystemExit(1)   # fail loudly so no decision is made on stale data

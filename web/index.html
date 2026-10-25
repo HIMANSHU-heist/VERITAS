@@ -3,96 +3,220 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>VERITAS Alerts</title>
+<title>VERITAS | paper-trading decisions with proof</title>
 <style>
-  body{font-family:system-ui,sans-serif;max-width:520px;margin:24px auto;padding:0 16px;line-height:1.5}
-  input[type=email],input[type=password]{width:100%;padding:10px;margin:6px 0;box-sizing:border-box}
-  button{padding:10px 14px;margin:6px 6px 6px 0;cursor:pointer}
-  .note{color:#555;font-size:13px} .msg{margin:10px 0;padding:8px;background:#f3f3f3;border-radius:6px}
-  label{display:block;margin:8px 0}
+:root{--bg:#fff;--fg:#1a1a1a;--mut:#666;--card:#f5f6f8;--line:#e1e4e8;--ok:#1a7f4b;--bad:#b3261e;--warn:#9a5b00}
+@media (prefers-color-scheme:dark){:root{--bg:#111418;--fg:#e8e9ec;--mut:#9aa0a8;--card:#1b2027;--line:#2b323b;--ok:#4cc38a;--bad:#ff7b72;--warn:#e3a33b}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,sans-serif}
+main{max-width:960px;margin:0 auto;padding:16px}
+header{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+h1{margin:0;font-size:22px}h2{font-size:17px;margin:28px 0 8px}
+.btn{display:inline-block;padding:8px 12px;border:1px solid var(--fg);border-radius:6px;text-decoration:none;font-size:14px;color:inherit}
+.note{color:var(--mut);font-size:13px}
+.banner{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin:12px 0;font-size:13px}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+td:last-child{white-space:normal;text-align:left}
+.pos{color:var(--ok)}.neg{color:var(--bad)}
+.chip{display:inline-block;padding:2px 8px;border-radius:99px;background:var(--card);border:1px solid var(--line);font-size:12px;margin:2px 4px 2px 0}
+.badge{display:inline-block;padding:2px 10px;border-radius:6px;font-weight:600;font-size:13px;border:1px solid currentColor}
+.TRADE{color:var(--ok)}.ABSTAIN,.WAIT{color:var(--warn)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+.kv{display:grid;grid-template-columns:150px 1fr;gap:6px 12px}
+.kv>div:nth-child(odd){color:var(--mut)}
+.legend span{margin-right:14px;font-size:13px}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px}
+tr.row{cursor:pointer}tr.row:hover{background:var(--card)}
+select,button.f{padding:6px 10px;margin:2px;font-size:14px}
+button.f.on{background:var(--fg);color:var(--bg)}
+@media(max-width:560px){.kv{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
-<h2>VERITAS paper-trading alerts</h2>
-<p class="note">Educational paper-trading demo. No real orders are placed. Not investment advice.
-Emails describe what a software model decided and why, including when it chose NOT to trade.</p>
-<div id="msg" class="msg" hidden></div>
+<main>
+<header><h1>VERITAS</h1><a class="btn" href="subscribe.html">Get email alerts</a></header>
+<p class="note">A paper-trading AI that must show its reasoning, and is allowed to say "no trade".</p>
+<div class="banner">Educational paper-trading demo. No real orders are placed. Not investment advice.
+The decisions below are a <b>replay on a held-out year</b>, not live trading.</div>
+<div id="err" class="banner" hidden></div>
 
-<div id="authBox">
-  <input id="email" type="email" placeholder="Email" autocomplete="email">
-  <input id="pw" type="password" placeholder="Password (min 6 chars)" autocomplete="current-password">
-  <button id="signup">Sign up</button>
-  <button id="login">Log in</button>
-</div>
+<div id="todaybox" hidden><h2>Today's decision (live, paper)</h2><div id="today" class="card"></div><p class="note" id="todaynote"></p></div>
+<h2>Scoreboard (paper money, net of costs)</h2>
+<div class="scroll"><table id="score"></table></div>
+<p class="note" id="insight"></p>
 
-<div id="appBox" hidden>
-  <p>Signed in as <b id="who"></b> &middot; email verified: <b id="ver"></b></p>
-  <button id="resend" hidden>Resend verification email</button>
-  <button id="refresh">I verified, refresh</button>
-  <h3>Email preferences</h3>
-  <label><input type="checkbox" id="optIn"> I agree to receive VERITAS paper-trading emails (you can untick this any time)</label>
-  <label><input type="checkbox" id="digest" checked> Daily decision digest + evening recap</label>
-  <label><input type="checkbox" id="instant" checked> Instant alerts (trade approved, red-team veto, VIX stress, safety stop)</label>
-  <button id="save">Save preferences</button>
-  <button id="logout">Log out</button>
-</div>
+<h2>Cumulative paper P&amp;L</h2>
+<div id="chart"></div>
+<div class="legend" id="legend"></div>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
-         sendEmailVerification, onAuthStateChanged, signOut }
-  from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc, serverTimestamp }
-  from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
-import { firebaseConfig } from "./firebase-config.js";
+<h2>Why it stayed out</h2>
+<div id="gates"></div>
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+<h2>Decision card</h2>
+<label>Day <select id="pick"></select></label>
+<div id="card" class="card" style="margin-top:8px"></div>
+
+<h2>All days</h2>
+<div id="filters"></div>
+<div class="scroll"><table id="hist"></table></div>
+<p class="note" id="foot"></p>
+</main>
+
+<script>
 const $ = (id) => document.getElementById(id);
-const say = (t) => { $("msg").textContent = t; $("msg").hidden = !t; };
-const fail = (e) => say(e.code ? e.code.replace("auth/", "").replaceAll("-", " ") : String(e));
-
-$("signup").onclick = async () => {
-  try {
-    const c = await createUserWithEmailAndPassword(auth, $("email").value.trim(), $("pw").value);
-    await sendEmailVerification(c.user);
-    say("Account created. Verification email sent. Check inbox and spam, then click 'I verified, refresh'.");
-  } catch (e) { fail(e); }
-};
-$("login").onclick = async () => {
-  try { await signInWithEmailAndPassword(auth, $("email").value.trim(), $("pw").value); say(""); }
-  catch (e) { fail(e); }
-};
-$("logout").onclick = () => signOut(auth);
-$("resend").onclick = async () => {
-  try { await sendEmailVerification(auth.currentUser); say("Verification email sent again."); }
-  catch (e) { fail(e); }
-};
-$("refresh").onclick = async () => { await auth.currentUser.reload(); await render(auth.currentUser); };
-$("save").onclick = async () => {
-  const u = auth.currentUser;
-  if (!u.emailVerified && $("optIn").checked) { say("Verify your email first, then opt in."); return; }
-  try {
-    await setDoc(doc(db, "users", u.uid), {
-      optIn: $("optIn").checked, digest: $("digest").checked,
-      instant: $("instant").checked, updatedAt: serverTimestamp(),
-    });
-    say($("optIn").checked ? "Saved. You will receive VERITAS paper-trading emails." : "Saved. You are unsubscribed.");
-  } catch (e) { fail(e); }
-};
-
-async function render(u) {
-  $("authBox").hidden = !!u; $("appBox").hidden = !u;
-  if (!u) return;
-  $("who").textContent = u.email;
-  $("ver").textContent = u.emailVerified ? "yes" : "no";
-  $("resend").hidden = u.emailVerified;
-  const s = await getDoc(doc(db, "users", u.uid));
-  const d = s.exists() ? s.data() : { optIn: false, digest: true, instant: true };
-  $("optIn").checked = !!d.optIn; $("digest").checked = d.digest !== false; $("instant").checked = d.instant !== false;
+function h(tag, props, ...kids) {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(props || {})) {
+    if (k === "class") e.className = v;
+    else if (k.startsWith("on")) e.addEventListener(k.slice(2), v);
+    else e.setAttribute(k, v);
+  }
+  for (const k of kids.flat()) if (k != null) e.append(k.nodeType ? k : document.createTextNode(String(k)));
+  return e;
 }
-onAuthStateChanged(auth, render);
+const inr = (x) => (x < 0 ? "-" : "") + "INR " + Math.abs(x).toLocaleString("en-IN", {maximumFractionDigits: 0});
+const cls = (v) => (v < 0 ? "neg" : "pos");
+const GATE = {
+  conformal_ambiguous: "Model unsure (UP and DOWN both plausible)",
+  edge_below_cost: "Expected edge below trading costs",
+  vix_stress: "Volatility (VIX) too high",
+  redteam_veto: "AI red-team vetoed",
+  agent_disagreement: "Cue and ML disagree",
+  llm_wait: "AI strategist said wait",
+  llm_error: "AI unavailable, failed safe",
+  kill_switch: "Kill-switch active",
+  rate_limit: "Order rate limit",
+  data_invalid: "Data invalid",
+  invalid_size: "Invalid size"
+};
+let D, FILTER = "ALL";
+
+fetch("data/data.json", {cache: "no-store"})
+  .then((r) => { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+  .then(init)
+  .catch((e) => { const b = $("err"); b.hidden = false; b.textContent = "Could not load data: " + e.message; });
+
+function init(d) {
+  D = d;
+  scoreboard(); chart(); gates(); picker(); filters(); history();
+  show(D.cards.length - 1);
+  const S = D.summary;
+  $("foot").textContent = "Data generated " + D.generated_at + ". Audit chain: " + S.audit.audit + " (" + S.audit.lines +
+    " entries). Test window " + S.window[0] + " to " + S.window[1] + ". Conformal alpha " + S.alpha + ".";
+}
+
+function scoreboard() {
+  const S = D.summary;
+  const rows = [["Trade every day", S.every_day], ["ML + safety gates", S.ml_gates],
+                ["Full pipeline (+AI agents)", S.pipeline], ["Buy & hold (no cost)", S.buy_hold]];
+  $("score").replaceChildren(
+    h("tr", {}, ...["Strategy", "Trades", "Gross", "Costs", "Net", "Max drawdown"].map((x) => h("th", {}, x))),
+    ...rows.map(([n, m]) => h("tr", {}, h("td", {}, n), h("td", {}, m.n_trades), h("td", {}, inr(m.gross_pnl)),
+      h("td", {}, inr(m.cost)), h("td", {class: cls(m.net_pnl)}, inr(m.net_pnl)), h("td", {}, inr(m.max_drawdown_inr)))));
+  const p = S.pipeline, n = p.n_trades, pv = S.position_value_inr;
+  if (!n) { $("insight").textContent = "The pipeline made no trades in this window."; return; }
+  const g = (p.gross_pnl / (n * pv)) * 1e4, c = (p.cost / (n * pv)) * 1e4;
+  $("insight").textContent = "On " + n + " paper trades the average gross move was " + g.toFixed(1) + " bps against " +
+    c.toFixed(1) + " bps of trading costs, so the net result is " + inr(p.net_pnl) + ". VERITAS does not claim profit. " +
+    "Its value is cutting overtrading, knowing when to stay out, and keeping a tamper-evident proof for every decision.";
+}
+
+function chart() {
+  const S = D.series, W = 900, H = 260, P = {l: 70, r: 12, t: 12, b: 24};
+  const names = [["ml_gates", "ML + gates", "#2457d6"], ["pipeline", "Full pipeline (+AI agents)", "#1a7f4b"],
+                 ["buy_hold", "Buy & hold (no cost)", "#c27a00"]];
+  const all = names.flatMap(([k]) => S[k]).concat([0]);
+  const lo = Math.min(...all), hi = Math.max(...all), n = S.dates.length;
+  const x = (i) => P.l + (i / Math.max(1, n - 1)) * (W - P.l - P.r);
+  const y = (v) => P.t + (1 - (v - lo) / (hi - lo || 1)) * (H - P.t - P.b);
+  const NS = "http://www.w3.org/2000/svg";
+  const el = (t, a) => { const e = document.createElementNS(NS, t); for (const k in a) e.setAttribute(k, a[k]); return e; };
+  const txt = (a, s) => { const t = el("text", Object.assign({"font-size": 11, fill: "currentColor", "fill-opacity": 0.7}, a)); t.textContent = s; return t; };
+  const svg = el("svg", {viewBox: "0 0 " + W + " " + H, width: "100%", role: "img", "aria-label": "Cumulative paper P&L"});
+  svg.append(el("line", {x1: P.l, x2: W - P.r, y1: y(0), y2: y(0), stroke: "currentColor", "stroke-opacity": 0.3, "stroke-dasharray": "4 3"}));
+  [...new Set([lo, 0, hi])].forEach((v) => svg.append(txt({x: P.l - 6, y: y(v) + 4, "text-anchor": "end"}, inr(v))));
+  names.forEach(([k, , c]) => svg.append(el("polyline", {fill: "none", stroke: c, "stroke-width": 2,
+    points: S[k].map((v, i) => x(i).toFixed(1) + "," + y(v).toFixed(1)).join(" ")})));
+  svg.append(txt({x: P.l, y: H - 6}, S.dates[0]));
+  svg.append(txt({x: W - P.r, y: H - 6, "text-anchor": "end"}, S.dates[n - 1]));
+  $("chart").replaceChildren(svg);
+  $("legend").replaceChildren(...names.map(([, nm, c]) => h("span", {}, h("span", {class: "dot", style: "background:" + c}), nm)));
+}
+
+function gates() {
+  const cnt = {};
+  let out = 0;
+  D.cards.forEach((c) => { if (c.decision !== "TRADE") { out++; (c.gate_failed || []).forEach((g) => { cnt[g] = (cnt[g] || 0) + 1; }); } });
+  const rows = Object.entries(cnt).sort((a, b) => b[1] - a[1]);
+  $("gates").replaceChildren(
+    h("p", {class: "note"}, "Stayed out on " + out + " of " + D.cards.length + " days. A day can fail more than one gate."),
+    ...rows.map(([g, n]) => h("span", {class: "chip"}, (GATE[g] || g) + ": " + n)));
+}
+
+function picker() {
+  $("pick").replaceChildren(...D.cards.map((c, i) => h("option", {value: i}, c.date + "  " + c.decision)));
+  $("pick").onchange = (e) => show(+e.target.value);
+}
+
+function show(i) {
+  $("pick").value = i;
+  const c = D.cards[i];
+  const kv = [
+    ["Date", c.date],
+    ["Decision", h("span", {class: "badge " + c.decision}, c.decision)],
+    ["Model P(up)", (c.p_up * 100).toFixed(1) + "%"],
+    ["Conformal set", (c.conformal_set || []).join(" / ") || "none"],
+    ["Edge estimate", c.edge_pct + "% (round-trip cost ~" + D.summary.edge_stats.round_trip_cost_pct + "%)"]
+  ];
+  if (c.cue_score != null) kv.push(["Global cue score", c.cue_score]);
+  kv.push(["Gates that blocked", (c.gate_failed || []).length
+    ? h("span", {}, c.gate_failed.map((g) => h("span", {class: "chip"}, GATE[g] || g))) : "none"]);
+  if (c.counterfactual) kv.push(["What would change it", c.counterfactual]);
+  if (c.proposal) kv.push(["Strategy thesis", c.proposal.thesis]);
+  ((c.red_team && c.red_team.objections) || []).slice(0, 3).forEach((o) => kv.push(["Red-team " + o.severity, o.text]));
+  if (c.decision === "TRADE") kv.push(["Paper result", (c.side > 0 ? "BUY " : "SELL ") + c.qty + " units: gross " +
+    inr(c.gross) + ", costs " + inr(c.cost) + ", net " + inr(c.net)]);
+  kv.push(["Audit hash", h("code", {title: c.audit_hash}, c.audit_hash.slice(0, 16) + "...")]);
+  $("card").replaceChildren(h("div", {class: "kv"}, kv.flatMap(([k, v]) => [h("div", {}, k), h("div", {}, v)])));
+}
+
+function filters() {
+  $("filters").replaceChildren(...["ALL", "TRADE", "ABSTAIN", "WAIT"].map((f) =>
+    h("button", {class: "f" + (f === FILTER ? " on" : ""), onclick: () => { FILTER = f; filters(); history(); }}, f)));
+}
+
+function history() {
+  const rows = D.cards.map((c, i) => [c, i]).filter(([c]) => FILTER === "ALL" || c.decision === FILTER).reverse();
+  $("hist").replaceChildren(
+    h("tr", {}, ...["Date", "Decision", "P(up)", "Edge %", "Net", "Why"].map((x) => h("th", {}, x))),
+    ...rows.map(([c, i]) => h("tr", {class: "row", onclick: () => { show(i); $("card").scrollIntoView({behavior: "smooth"}); }},
+      h("td", {}, c.date), h("td", {class: c.decision}, c.decision), h("td", {}, (c.p_up * 100).toFixed(0) + "%"),
+      h("td", {}, c.edge_pct), h("td", {class: c.net == null ? "" : cls(c.net)}, c.net == null ? "" : inr(c.net)),
+      h("td", {}, (c.gate_failed || []).map((g) => GATE[g] || g).join(", ")))));
+}
+
+fetch("data/today.json", {cache: "no-store"}).then((r) => (r.ok ? r.json() : null)).then((t) => {
+  if (!t) return;
+  const c = t.card;
+  $("todaybox").hidden = false;
+  const rows = [["Date", c.date], ["Decision", h("span", {class: "badge " + c.decision}, c.decision)],
+    ["Model P(up)", c.p_up != null ? (c.p_up * 100).toFixed(1) + "%" : "n/a"],
+    ["Conformal set", (c.conformal_set || []).join(" / ") || "n/a"],
+    ["Edge estimate", c.edge_pct != null ? c.edge_pct + "%" : "n/a"],
+    ["Gates that blocked", (c.gate_failed || []).length
+      ? h("span", {}, c.gate_failed.map((g) => h("span", {class: "chip"}, GATE[g] || g))) : "none"]];
+  if (c.counterfactual) rows.push(["What would change it", c.counterfactual]);
+  if (c.proposal) rows.push(["Strategy thesis", c.proposal.thesis]);
+  ((c.red_team && c.red_team.objections) || []).slice(0, 3).forEach((o) => rows.push(["Red-team " + o.severity, o.text]));
+  if (c.settled) rows.push(["Result after close", "NIFTY open-to-close " + c.ret_oc_pct + "%, paper P&L " + inr(c.net)]);
+  else if (c.outcome) rows.push(["After close", c.outcome]);
+  rows.push(["Audit hash", h("code", {}, (c.audit_hash || "").slice(0, 16) + "...")]);
+  $("today").replaceChildren(h("div", {class: "kv"}, rows.flatMap(([k, v]) => [h("div", {}, k), h("div", {}, v)])));
+  $("todaynote").textContent = "Live paper decision made at 08:30 IST, before the market opens. Updated " + t.generated_at + ".";
+}).catch(() => {});
 </script>
 </body>
 </html>
