@@ -20,8 +20,8 @@ jobs:
     env:
       SEND: ${{ github.event_name == 'schedule' || inputs.send }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.14"
           cache: pip
@@ -52,12 +52,18 @@ jobs:
           git config user.email "veritas-bot@users.noreply.github.com"
           git add data/live_cards.jsonl data/live_audit web/data/today.json
           git commit -m "settled card $(date -u +%F)" || echo "nothing to commit"
+          git pull --rebase origin main
           git push
       - name: Deploy dashboard
-        continue-on-error: true
         env:
           SA: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
         run: |
+          if [ ! -f web/index.html ]; then echo "No web/index.html yet, skipping deploy"; exit 0; fi
           echo "$SA" > "$RUNNER_TEMP/sa.json"
           export GOOGLE_APPLICATION_CREDENTIALS="$RUNNER_TEMP/sa.json"
-          npx --yes firebase-tools@15 deploy --only hosting --project veritas-trading
+          if npx --yes firebase-tools@15 deploy --only hosting --project veritas-trading --non-interactive; then
+            echo "Deploy OK"
+          else
+            echo "::warning::Hosting deploy failed. Give the service account the roles Firebase Hosting Admin and Service Usage Consumer, and enable the Firebase Hosting API."
+          fi
+          rm -f "$RUNNER_TEMP/sa.json"
