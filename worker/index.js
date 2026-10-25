@@ -16,8 +16,10 @@ const SYSTEM =
   "coding, anything) answer normally from your own knowledge. " +
   "3) Never give personal investment advice or tell the user to " +
   "buy or sell a real security. " +
-  "Be simple and short. Reply in the language the user writes " +
-  "(Marathi, Hindi or English).";
+  "Be simple and short. ALWAYS reply in English, even if the user " +
+  "writes in romanized Marathi or Hindi (Hinglish). Reply in another " +
+  "language only if the user explicitly asks for it or writes in " +
+  "that language's own script.";
 
 export default {
   async fetch(req, env) {
