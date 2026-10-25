@@ -52,7 +52,7 @@ jobs:
           git config user.email "veritas-bot@users.noreply.github.com"
           git add data/live_cards.jsonl data/live_audit web/data/today.json
           git commit -m "settled card $(date -u +%F)" || echo "nothing to commit"
-          git pull --rebase origin main
+          git pull --rebase --autostash origin main
           git push
       - name: Deploy dashboard
         env:
