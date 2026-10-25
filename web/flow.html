@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0a0e17">
+<title>How VERITAS works</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0e17;--bd:#232b3d;--tx:#dbe1ee;--mut:#8591a8}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:radial-gradient(900px 500px at 10% -10%,rgba(90,169,255,.14),transparent 60%),radial-gradient(800px 500px at 100% 0,rgba(155,123,255,.12),transparent 60%),var(--bg);background-attachment:fixed;color:var(--tx);font:14px/1.5 Inter,system-ui,sans-serif;min-height:100vh}
+.wrap{max-width:1180px;margin:0 auto;padding:16px 16px 100px}
+.top{display:flex;justify-content:space-between;gap:10px;padding:6px 0 14px}
+.top a{color:#5b8cff;text-decoration:none;font-weight:600}
+h1{font-size:clamp(28px,5.5vw,46px);font-weight:800;letter-spacing:-.02em;line-height:1.1}
+h1 span{background:linear-gradient(90deg,#5aa9ff,#9b7bff,#2ee6a6);-webkit-background-clip:text;background-clip:text;color:transparent}
+.lead{color:var(--mut);max-width:740px;margin:10px 0 18px}
+.bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:22px}
+.btn{background:linear-gradient(135deg,#2962ff,#9b7bff);border:0;color:#fff;font:700 13px Inter;padding:10px 16px;border-radius:12px;cursor:pointer;box-shadow:0 8px 26px rgba(41,98,255,.4)}
+.st{font-size:12.5px;color:var(--mut);padding:6px 12px;border:1px solid var(--bd);border-radius:99px}
+.layer{--c:#5aa9ff;border:1px solid var(--bd);border-radius:18px;background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.015));padding:16px 16px 16px 20px;position:relative;transition:all .5s}
+.layer::before{content:"";position:absolute;left:0;top:16px;bottom:16px;width:4px;border-radius:4px;background:var(--c)}
+.layer.lit{box-shadow:0 0 0 1px var(--c),0 0 46px -14px var(--c)}
+.layer.skip{opacity:.35;filter:grayscale(.8)}
+.lh{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;margin-bottom:12px}
+.lh b{color:var(--c);font-size:11px;letter-spacing:.14em}
+.lh h2{font-size:17px}.lh p{color:var(--mut);font-size:12.5px}
+.nodes{display:grid;grid-template-columns:repeat(auto-fit,minmax(205px,1fr));gap:10px}
+.node{background:#0f1523;border:1px solid var(--bd);border-radius:14px;padding:12px;cursor:pointer;transition:all .25s}
+.node:hover{transform:translateY(-3px);border-color:var(--c);box-shadow:0 10px 30px -12px var(--c)}
+.node .i{font-size:22px}.node h3{font-size:14px;margin-top:4px}
+.node small{display:block;color:var(--mut);font-size:11.5px;margin:2px 0 6px}
+.node code{font:10.5px "JetBrains Mono",monospace;color:#7684a0}
+.node.fail{border-color:#ff5d73;background:rgba(255,93,115,.12)}
+.node.ok{border-color:rgba(46,230,166,.55)}
+.conn{height:42px;width:2px;margin:0 auto;background:#222a3f;position:relative}
+.conn i{position:absolute;left:-3px;top:-6px;width:8px;height:8px;border-radius:50%;background:var(--c);box-shadow:0 0 12px var(--c);animation:fl 1.8s linear infinite;opacity:0}
+.conn i:nth-child(2){animation-delay:.6s}.conn i:nth-child(3){animation-delay:1.2s}
+@keyframes fl{0%{top:-6px;opacity:0}15%{opacity:1}85%{opacity:1}100%{top:40px;opacity:0}}
+.sec{font-size:12px;letter-spacing:.14em;color:var(--mut);margin:34px 0 12px}
+.fr{margin:10px 0}.fr .t{display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px}
+.fr .b{height:14px;border-radius:99px;background:#161d2e;overflow:hidden}
+.fr .b div{height:100%;border-radius:99px;width:0;transition:width 1.2s}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+.rail{border:1px solid var(--bd);border-radius:14px;padding:14px;background:#0f1523}
+.rail h4{font-size:14px;margin:4px 0}.rail p{color:var(--mut);font-size:12.5px}
+.foot{margin-top:30px;text-align:center;color:var(--mut);font-size:12px}
+#dr{position:fixed;left:0;right:0;bottom:0;z-index:50;max-width:760px;margin:0 auto;background:#141b2c;border:1px solid #2c3550;border-radius:20px 20px 0 0;padding:18px 18px calc(18px + env(safe-area-inset-bottom));transform:translateY(110%);transition:transform .35s;box-shadow:0 -20px 60px rgba(0,0,0,.6)}
+#dr.on{transform:none}
+#x{position:absolute;right:14px;top:12px;background:none;border:0;color:var(--mut);font-size:20px;cursor:pointer}
+#dc h3{font-size:19px}#dc .sb{color:var(--mut);margin:2px 0 10px}
+#dc p{margin:8px 0}.pl{display:inline-block;font:11px "JetBrains Mono",monospace;padding:3px 9px;border-radius:99px;background:#0c1220;border:1px solid var(--bd);color:#9fb0d0;margin:4px 6px 0 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top"><a href="./">&larr; Dashboard</a><a href="subscribe.html">Email alerts</a></div>
+  <h1>How <span>VERITAS</span> decides</h1>
+  <p class="lead">Every weekday at 08:30 IST a pipeline of data firewalls, machine learning, AI agents and a C++ risk engine decides whether to paper-trade, and logs why. Most days the answer is "no", on purpose.</p>
+  <div class="bar"><button class="btn" id="play">&#9654; Replay today's decision</button><span class="st" id="st">loading...</span><span class="st">Tap any block for details</span></div>
+  <div id="flow"></div>
+  <h2 class="sec">BACKTEST FUNNEL</h2>
+  <div id="fun"></div>
+  <h2 class="sec">BUILT-IN SAFETY RAILS</h2>
+  <div class="grid2" id="rails"></div>
+  <p class="foot">Paper-trading research demo. No real orders. Not investment advice.</p>
+</div>
+<div id="dr"><button id="x">&#10005;</button><div id="dc"></div></div>
+<script>
+const LAYERS=[
+{k:'t',c:'#5aa9ff',t:'Triggers',s:'GitHub Actions, fully automatic',n:[
+ {id:'n_m',i:'⏰',n:'Morning run',s:'Mon-Fri · 08:30 IST',f:'morning.yml',d:'Builds the C++ engine, downloads fresh data, makes the day\'s decision, emails subscribers, saves the card and redeploys the site.',p:['cron 03:00 UTC','GitHub Actions']},
+ {id:'n_w',i:'👁️',n:'Market watch',s:'every 30 min · 09:45-15:15',f:'watch.yml',d:'Intraday watcher that can fire instant alerts while the market is open.',p:['cron','python.watcher']},
+ {id:'n_e',i:'🌆',n:'Evening recap',s:'Mon-Fri · 16:15 IST',f:'evening.yml',d:'Settles the day with the real NIFTY open-to-close and sends the recap.',p:['cron 10:45 UTC','settle.py']}]},
+{k:'d',c:'#22d3ee',t:'Data',s:'what the system is allowed to see',n:[
+ {id:'n_y',i:'📥',n:'Market data',s:'12 series · 5y daily',f:'download_data.py',d:'NIFTY, four large caps, S&P 500, Nasdaq, Nikkei, crude, gold, USD/INR and India VIX. If any series fails, the run stops so no decision is made on stale data.',p:['yfinance','parquet']},
+ {id:'n_c',i:'🧱',n:'DataClock',s:'point-in-time firewall',f:'dataclock.py',d:'Every bar gets an available_at time. Indian bars appear after 15:45 IST, global bars the next UTC midnight. A tripwire rejects any prompt that mentions a future date.',p:['no look-ahead','leakage tripwire']}]},
+{k:'m',c:'#9b7bff',t:'Machine learning',s:'a number, and how sure it is',n:[
+ {id:'n_f',i:'🧮',n:'Features',s:'8 series · causal only',f:'features.py',d:'Returns, volatility, RSI, MA ratio, VIX level and overnight global moves, all computed using only past data.',p:['pandas','merge_asof']},
+ {id:'n_l',i:'🌲',n:'LightGBM',s:'P(NIFTY up today)',f:'train_technical.py',d:'Gradient-boosted trees give the probability that NIFTY closes above its open.',p:['LightGBM','60/20/20 split']},
+ {id:'n_q',i:'🎯',n:'Conformal sets',s:'alpha 0.10 · per class',f:'conformal.py',d:'Returns {UP}, {DOWN} or {both}. If both outcomes stay plausible the model is unsure, and the system abstains.',p:['Mondrian conformal']},
+ {id:'n_i',i:'📈',n:'Edge estimate',s:'isotonic calibration',f:'live_artifacts.py',d:'Maps model confidence to the average % return actually realised in a calibration window.',p:['isotonic regression']},
+ {id:'n_u',i:'🌍',n:'Cue model',s:'overnight global signals',f:'agents/core.py',d:'Ridge regression on S&P, Nasdaq, Nikkei, crude, gold, USD/INR and VIX gives a -1..1 score plus its top drivers.',p:['Ridge','explainable']}]},
+{k:'gate',c:'#f5a623',t:'C++ risk engine: pre-check',s:'deterministic gates, no AI yet',n:[
+ {id:'g_conf',i:'🔒',n:'Certainty gate',s:'conformal set must be single',f:'risk_engine.cpp',d:'Unsure model means no trade.',p:['conformal_ambiguous']},
+ {id:'g_edge',i:'💸',n:'Cost gate',s:'edge must beat 0.146%',f:'risk_engine.cpp',d:'Brokerage, STT, stamp duty, GST and slippage are all counted. If expected edge is smaller than the round-trip cost, the trade loses money on average.',p:['edge_below_cost']},
+ {id:'g_vix',i:'🌪️',n:'Volatility gate',s:'India VIX at most 25',f:'risk_engine.cpp',d:'Markets that are too jumpy are skipped.',p:['vix_stress']},
+ {id:'g_size',i:'📏',n:'Size clip',s:'at most 2% of capital',f:'risk_engine.cpp',d:'Position size is hard-capped, whatever any model says.',p:['max_position_pct']}]},
+{k:'ai',c:'#ff5d9e',t:'AI agents',s:'only run if every gate above passed',n:[
+ {id:'a_cue',i:'💡',n:'Cue agent',s:'gpt-oss-20b',f:'agents/core.py',d:'Explains the cue score in plain words. Numbers come from code; the LLM only writes the explanation.',p:['Groq','schema-validated']},
+ {id:'a_news',i:'📰',n:'News agent',s:'injection-safe',f:'agents/core.py',d:'Headlines are untrusted data: a regex filter strips prompt injections, and invented evidence ids are dropped. Currently neutral (price-only run).',p:['sanitizer','evidence ids']},
+ {id:'a_str',i:'🧠',n:'Strategist',s:'gpt-oss-120b',f:'agents/core.py',d:'Proposes BUY, SELL or WAIT. It may only agree with the ML direction or wait. It can never flip or invent a trade.',p:['reconcile()','size at most 2%']},
+ {id:'a_red',i:'🛡️',n:'Red-team',s:'gpt-oss-120b',f:'agents/core.py',d:'Tries to falsify the proposal. A HIGH severity finding vetoes the trade.',p:['veto']},
+ {id:'a_her',i:'⚖️',n:'Herding check',s:'agent disagreement',f:'agents/core.py',d:'If the cue model and ML model strongly disagree, the engine blocks the trade.',p:['disagreement 0.6']}]},
+{k:'f',c:'#2ee6a6',t:'C++ risk engine: final say',s:'the only thing that can approve a trade',n:[
+ {id:'f_ks',i:'🚨',n:'Kill-switch',s:'daily loss 2% · drawdown 8%',f:'risk_engine.cpp',d:'Also trips on more than 5 orders per second. Once tripped, everything is blocked.',p:['hard stop']},
+ {id:'f_dec',i:'✅',n:'Decision card',s:'TRADE or ABSTAIN',f:'daily.py',d:'Every card carries the gates that fired and a counterfactual such as "would trade if edge was above 0.146%".',p:['counterfactual']},
+ {id:'f_aud',i:'⛓️',n:'Audit chain',s:'SHA-256 hash-chained',f:'live_audit/*.jsonl',d:'Each log line hashes the previous one. Edit any past line and verification reports BROKEN.',p:['tamper-evident']}]},
+{k:'o',c:'#5aa9ff',t:'Outputs',s:'what you see and receive',n:[
+ {id:'o_set',i:'🧾',n:'Settle',s:'real close, paper P&L',f:'settle.py',d:'After the market closes, the real NIFTY open-to-close is applied to the day\'s card.',p:['paper P&L']},
+ {id:'o_dash',i:'📊',n:'Dashboard',s:'Firebase Hosting',f:'web/index.html',d:'TradingView-style terminal with candles, trade markers, equity curves and the agent pipeline for any day.',p:['Lightweight Charts']},
+ {id:'o_mail',i:'✉️',n:'Email alerts',s:'verified + opted-in only',f:'python/alerts',d:'Subscribers live in Firestore. Only Firebase-verified emails that opted in get the daily digest, instant alerts and evening recap.',p:['Firestore','Gmail SMTP']},
+ {id:'o_chat',i:'💬',n:'Ask VERITAS',s:'chatbot',f:'worker/index.js',d:'A Cloudflare Worker adds the live data as context and asks Groq. It answers VERITAS questions from data, and general questions too. Rate-limited.',p:['Cloudflare Worker','Groq']}]}
+];
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const ALL={};LAYERS.forEach(L=>L.n.forEach(n=>ALL[n.id]=n));
+let h='';
+LAYERS.forEach((L,i)=>{
+  if(i)h+='<div class="conn" style="--c:'+L.c+'"><i></i><i></i><i></i></div>';
+  h+='<section class="layer" id="L'+i+'" style="--c:'+L.c+'"><div class="lh"><b>STEP '+(i+1)+'</b><h2>'+L.t+'</h2><p>'+L.s+'</p></div><div class="nodes">'+
+  L.n.map(n=>'<div class="node" id="'+n.id+'" data-id="'+n.id+'"><div class="i">'+n.i+'</div><h3>'+n.n+'</h3><small>'+n.s+'</small><code>'+n.f+'</code></div>').join('')+'</div></section>';
+});
+$('#flow').innerHTML=h;
+document.querySelectorAll('.node').forEach(el=>el.onclick=()=>{
+  const n=ALL[el.dataset.id];
+  $('#dc').innerHTML='<h3>'+n.i+' '+n.n+'</h3><div class="sb">'+n.s+'</div><p>'+n.d+'</p><span class="pl">'+n.f+'</span>'+n.p.map(x=>'<span class="pl">'+esc(x)+'</span>').join('');
+  $('#dr').classList.add('on');
+});
+$('#x').onclick=()=>$('#dr').classList.remove('on');
+const RAILS=[['🤐','AI can only say yes or wait','The strategist may agree with the ML direction or WAIT. It can never flip or originate a trade.'],
+ ['🧯','Fail closed','Any AI error, bad JSON, stale data or missing series means no trade, never a guess.'],
+ ['⚙️','C++ has the final say','Even a fully hijacked LLM cannot get past deterministic gates, size caps and the kill-switch.'],
+ ['📝','Everything is logged','Every decision, including every refusal, is hash-chained so history cannot be quietly rewritten.']];
+$('#rails').innerHTML=RAILS.map(r=>'<div class="rail"><div style="font-size:24px">'+r[0]+'</div><h4>'+r[1]+'</h4><p>'+r[2]+'</p></div>').join('');
+let card=null,F={days:243,cand:50,veto:23,trades:27};
+function funnel(){
+  const rows=[['Trading days in test window',F.days,'#5aa9ff'],['Passed ML, conformal and cost gates',F.cand,'#9b7bff'],['Approved after AI review and C++ final check',F.trades,'#2ee6a6']];
+  $('#fun').innerHTML=rows.map(r=>'<div class="fr"><div class="t"><span>'+r[0]+'</span><b>'+r[1]+'</b></div><div class="b"><div data-w="'+(r[1]/F.days*100)+'" style="background:'+r[2]+'"></div></div></div>').join('')+
+   '<p style="color:var(--mut);font-size:12.5px;margin-top:8px">'+F.veto+' candidate trades were vetoed by the AI red-team.</p>';
+  setTimeout(()=>document.querySelectorAll('.fr .b div').forEach(e=>e.style.width=Math.max(2,e.dataset.w)+'%'),80);
+}
+const MAP={conformal_ambiguous:'g_conf',edge_below_cost:'g_edge',vix_stress:'g_vix',invalid_size:'g_size'};
+const PRE=['conformal_ambiguous','edge_below_cost','vix_stress','invalid_size','data_invalid'];
+function clr(){document.querySelectorAll('.layer').forEach(e=>e.classList.remove('lit','skip'));document.querySelectorAll('.node').forEach(e=>e.classList.remove('fail','ok'));}
+function play(){
+  clr();const gf=(card&&card.gate_failed)||[],pre=gf.some(g=>PRE.includes(g));
+  LAYERS.forEach((L,i)=>setTimeout(()=>{
+    const el=$('#L'+i);
+    if(L.k==='ai'&&pre){el.classList.add('skip');return;}
+    el.classList.add('lit');
+    if(L.k==='gate')L.n.forEach(n=>$('#'+n.id).classList.add(gf.some(g=>MAP[g]===n.id)?'fail':'ok'));
+    el.scrollIntoView({behavior:'smooth',block:'center'});
+  },i*1100));
+}
+$('#play').onclick=play;
+(async()=>{
+  try{const r=await fetch('data/today.json?t='+Date.now());if(r.ok)card=(await r.json()).card;}catch(e){}
+  try{const r=await fetch('data/data.json?t='+Date.now());if(r.ok){const d=await r.json();F={days:d.summary.n_days,cand:d.summary.agent_stats.candidates,veto:d.summary.agent_stats.redteam_veto,trades:d.summary.pipeline.n_trades};}}catch(e){}
+  funnel();
+  $('#st').textContent=card?('Today '+card.date+': '+card.decision+((card.gate_failed||[]).length?' · blocked by '+card.gate_failed.join(', '):'')):'No live card yet';
+})();
+</script>
+</body>
+</html>
