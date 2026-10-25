@@ -46,7 +46,9 @@ jobs:
         run: |
           git config user.name "veritas-bot"
           git config user.email "veritas-bot@users.noreply.github.com"
-          git add data/watch_state.json web/data/watch.json
+          for f in data/watch_state.json web/data/watch.json; do
+            if [ -f "$f" ]; then git add "$f"; fi
+          done
           git commit -m "watch $(date -u +%FT%TZ)" || echo "nothing to commit"
           git pull --rebase --autostash origin main
           git push
