@@ -110,8 +110,8 @@ async function answer(q){
   const base=local(q);
   if(!API)return base;
   try{
-    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:q,context:ctx(q,base)})});
-    const j=await r.json();return j.answer||base;
+    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:q,context:ctx(q,base),history:window.__vh||[]})});
+    const j=await r.json();const a=j.answer||base;window.__vh=((window.__vh||[]).concat([{q:q.slice(0,300),a:a.slice(0,500)}])).slice(-4);return a;
   }catch(e){return base}
 }
 
