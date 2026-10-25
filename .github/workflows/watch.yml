@@ -1,0 +1,52 @@
+name: market-watch
+on:
+  schedule:
+    - cron: "15,45 4-9 * * 1-5"      # 09:45 to 15:15 IST, every 30 min
+  workflow_dispatch:
+    inputs:
+      send:
+        description: "Actually send emails (false = dry-run)"
+        type: boolean
+        default: false
+      simulate:
+        description: "TEST: fire all rules to test the alert email"
+        type: boolean
+        default: false
+permissions:
+  contents: write
+concurrency:
+  group: veritas-live
+  cancel-in-progress: false
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      SEND: ${{ github.event_name == 'schedule' || inputs.send }}
+      SIM: ${{ inputs.simulate }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.14"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Watch
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          GMAIL_USER: ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+        run: |
+          FLAGS=""
+          if [ "$SEND" = "true" ]; then FLAGS="$FLAGS --send"; fi
+          if [ "$SIM" = "true" ]; then FLAGS="$FLAGS --simulate --force"; fi
+          python -m python.watcher $FLAGS
+      - name: Save state
+        run: |
+          git config user.name "veritas-bot"
+          git config user.email "veritas-bot@users.noreply.github.com"
+          git add data/watch_state.json web/data/watch.json
+          git commit -m "watch $(date -u +%FT%TZ)" || echo "nothing to commit"
+          git pull --rebase --autostash origin main
+          git push
