@@ -34,9 +34,9 @@ def build():
     nf = load_frozen("NIFTY")
     w = nf[(nf["date"] >= pd.Timestamp(dates[0])) & (nf["date"] <= pd.Timestamp(dates[-1]))]
     closes = w["close"].values.astype(float)
-    prev = np.concatenate([[float(w["open"].iloc[0])], closes[:-1]])
-    bh_map = dict(zip(w["date"].dt.strftime("%Y-%m-%d"), pos * (closes / prev - 1.0)))
-    bh = np.round(np.cumsum([bh_map.get(d, 0.0) for d in dates]), 2).tolist()
+    bh_s = pd.Series(pos * (closes / float(w["open"].iloc[0]) - 1.0),
+                     index=w["date"].dt.strftime("%Y-%m-%d").values)
+    bh = bh_s.reindex(dates).ffill().fillna(0.0).round(2).tolist()
 
     return {
         "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
