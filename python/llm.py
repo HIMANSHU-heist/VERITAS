@@ -96,6 +96,8 @@ class LLM:
                 text = json.loads(f.read_text())["text"]
                 self.stats["cache_hit"] += 1
             elif self.mode == "replay":
+                if attempt == 0:
+                    continue   # live run may have needed the retry prompt; look for it
                 raise ReplayMiss(f"{role}: prompt not in cache")
             else:
                 text = self._api(model, system, u, temperature)
