@@ -1,0 +1,218 @@
+{
+  "n_vetoes": 23,
+  "good_vetoes": 14,
+  "good_veto_rate": 0.609,
+  "loss_avoided_inr": 1111.8,
+  "profit_missed_inr": 865.31,
+  "net_effect_inr": 246.49,
+  "note": "net_effect_inr > 0 means vetoing the trades was better than taking them",
+  "days": [
+    {
+      "date": "2025-12-04",
+      "side": "BUY",
+      "ret_oc_pct": 0.2,
+      "gross": 39.45,
+      "cost": 28.84,
+      "would_be_net": 10.61,
+      "veto_was": "BAD"
+    },
+    {
+      "date": "2025-12-19",
+      "side": "BUY",
+      "ret_oc_pct": 0.212,
+      "gross": 42.12,
+      "cost": 29.03,
+      "would_be_net": 13.09,
+      "veto_was": "BAD"
+    },
+    {
+      "date": "2025-12-30",
+      "side": "BUY",
+      "ret_oc_pct": -0.008,
+      "gross": -1.58,
+      "cost": 29.17,
+      "would_be_net": -30.75,
+      "veto_was": "GOOD"
+    },
+    {
+      "date": "2026-02-20",
+      "side": "BUY",
+      "ret_oc_pct": 0.648,
+      "gross": 128.71,
+      "cost": 29.0,
+      "would_be_net": 99.71,
+      "veto_was": "BAD"
+    },
+    {
+      "date": "2026-03-12",
+      "side": "BUY",
+      "ret_oc_pct": -0.151,
+      "gross": -29.87,
+      "cost": 28.93,
+      "would_be_net": -58.8,
+      "veto_was": "GOOD"
+    },
+    {
+      "date": "2026-03-16",
+      "side": "BUY",
+      "ret_oc_pct": 1.266,
+      "gross": 252.1,
+      "cost": 29.08,
+      "would_be_net": 223.02,
+      "veto_was": "BAD"
+    },
+    {
+      "date": "2026-04-08",
+      "side": "BUY",
+      "ret_oc_pct": 0.596,
+      "gross": 118.54,
+      "cost": 29.04,
+      "would_be_net": 89.5,
+      "veto_was": "BAD"
+    },
+    {
+      "date": "2026-05-06",
+      "side": "SELL",
+      "ret_oc_pct": 0.662,
+      "gross": -132.0,
+      "cost": 29.13,
+      "would_be_net": -161.13,
+      "veto_was": "GOOD"
+    },
+    {
+      "date": "2026-05-11",
+      "side": "BUY",
+      "ret_oc_pct": -0.644,
+      "gross": -127.57,
+      "cost": 28.95,
+      "would_be_net": -156.52,
+      "veto_was": "GOOD"
+    },
+    {
+      "date": "2026-06-10",
+      "side": "BUY",
+      "ret_oc_pct": -0.082,
+      "gross": -16.35,
+      "cost": 29.19,
+      "would_be_net": -45.54,
+      "veto_was": "GOOD"
+    },
+    {
+      "date": "2026-06-23",
+      "side": "BUY",
+      "ret_oc_pct": -1.027,
+      "gross": -202.97,
+      "cost": 28.86,
+      "would_be_net": -231.83,
+      "veto_was": "GOOD"
+    },
+    {
+      "date": "2026-07-22",
+      "side": "BUY",
+      "ret_oc_pct": -0.638,
+      "gross": -126.64,
+      "cost": 28.97,
+      "would_be_net": -155.61,
+      "veto_was": "GOOD"
+    },
+    {
+      "date": "2026-07-23",
+      "side": "BUY",
+      "ret_oc_pct": -0.147,
+      "gross": -29.33,
+      "cost": 29.09,
+      "would_be_net": -58.42,
+      "veto_was": "GOOD"
+    },
+    {
+      "date": "2026-08-04",
+      "side": "SELL",
+      "ret_oc_pct": -0.36,
+      "gross": 71.4,
+      "cost": 28.95,
+      "would_be_net": 42.45,
+      "veto_was": "BAD"
+    },
+    {
+      "date": "2026-08-06",
+      "side": "BUY",
+      "ret_oc_pct": -0.02,
+      "gross": -4.05,
+      "cost": 29.13,
+      "would_be_net": -33.18,
+      "veto_was": "GOOD"
+    },
+    {
+      "date": "2026-08-17",
+      "side": "BUY",
+      "ret_oc_pct": -0.229,
+      "gross": -45.8,
+      "cost": 29.18,
+      "would_be_net": -74.98,
+      "veto_was": "GOOD"
+    },
+    {
+      "date": "2026-09-01",
+      "side": "BUY",
+      "ret_oc_pct": -0.09,
+      "gross": -18.05,
+      "cost": 29.19,
+      "would_be_net": -47.24,
+      "veto_was": "GOOD"
+    },
+    {
+      "date": "2026-09-04",
+      "side": "BUY",
+      "ret_oc_pct": -0.055,
+      "gross": -10.94,
+      "cost": 28.94,
+      "would_be_net": -39.88,
+      "veto_was": "GOOD"
+    },
+    {
+      "date": "2026-09-10",
+      "side": "BUY",
+      "ret_oc_pct": 0.133,
+      "gross": 26.5,
+      "cost": 29.09,
+      "would_be_net": -2.59,
+      "veto_was": "GOOD"
+    },
+    {
+      "date": "2026-09-16",
+      "side": "BUY",
+      "ret_oc_pct": 0.069,
+      "gross": 13.71,
+      "cost": 29.04,
+      "would_be_net": -15.33,
+      "veto_was": "GOOD"
+    },
+    {
+      "date": "2026-09-17",
+      "side": "BUY",
+      "ret_oc_pct": 0.325,
+      "gross": 64.86,
+      "cost": 29.16,
+      "would_be_net": 35.7,
+      "veto_was": "BAD"
+    },
+    {
+      "date": "2026-09-25",
+      "side": "BUY",
+      "ret_oc_pct": 0.458,
+      "gross": 90.84,
+      "cost": 28.97,
+      "would_be_net": 61.87,
+      "veto_was": "BAD"
+    },
+    {
+      "date": "2026-10-13",
+      "side": "BUY",
+      "ret_oc_pct": 1.6,
+      "gross": 318.43,
+      "cost": 29.07,
+      "would_be_net": 289.36,
+      "veto_was": "BAD"
+    }
+  ]
+}
