@@ -102,12 +102,14 @@ def news_agent(llm, items, as_of=None):
 
 STRAT_SYS = ("You are a cautious strategist for a PAPER-trading system. Combine the agent outputs into ONE proposal. "
              "WAIT is always acceptable. You may only propose the direction in ml.direction, or WAIT. "
+             "past_lessons are notes from earlier days; use them only to be more cautious, never to override ml.direction. "
              "size_pct must not exceed 2. Quote the edge exactly as written in ml.edge_text; never convert units. size_pct is percent of capital (0 to 2). "
              "Fields: action (BUY|SELL|WAIT), size_pct, thesis, evidence_ids.")
 
 
-def strategy_agent(llm, cue, news, ml, her, as_of=None):
-    user = json.dumps({"cue": cue.model_dump(), "news": news.model_dump(), "ml": ml, "herding": her},
+def strategy_agent(llm, cue, news, ml, her, as_of=None, lessons=None):
+    user = json.dumps({"cue": cue.model_dump(), "news": news.model_dump(), "ml": ml, "herding": her,
+                       "past_lessons": list(lessons or [])[-5:]},
                       ensure_ascii=False)
     p = llm.call_json("strong", STRAT_SYS, user, ProposalOut, as_of=as_of)
     allowed = set(news.evidence_ids)

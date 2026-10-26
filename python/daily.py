@@ -13,6 +13,7 @@ import pandas as pd
 from python.agents import cue_agent, herding, redteam_agent, strategy_agent
 from python.dataclock import DataClock, load_frozen, to_utc
 from python.llm import LLM
+from python.reflect import recent_lessons
 from python.news import NO_NEWS, live_news
 from python.ml.features import SERIES, _utc_ns, series_features
 from python.orchestrator import order_request, reconcile
@@ -123,7 +124,7 @@ def decide(as_of, llm=None, use_llm=True, art=None, alpha=0.10, audit=None):
                         ml_llm.update(p_up=round(p_up, 3),
                                       edge_text=f"{edge:.3f}% of position value ({edge * 100:.0f} basis points)")
                         cue = cue_agent(llm, score, drivers, as_of=t)
-                        prop, _ = reconcile(strategy_agent(llm, cue, news, ml_llm, her2, as_of=t), action)
+                        prop, _ = reconcile(strategy_agent(llm, cue, news, ml_llm, her2, as_of=t, lessons=recent_lessons()), action)
                         red = redteam_agent(llm, prop, cue, NO_NEWS, ml_llm, as_of=t)
                         card.update(cue_reason=cue.reason, proposal=prop.model_dump(), red_team=red.model_dump())
                         req = order_request(prop, red, her2, ml, price, vix, ts + 1)
