@@ -25,6 +25,7 @@ def main():
     subs = [{"email": a.to}] if a.to else load_subscribers()
     sent = {json.loads(l)["key"] for l in open(SENT)} if SENT.exists() else set()
     n = 0
+    fails = 0
     for sub in subs:
         for kind, _ in events_for(card, a.phase):
             digest_kind = kind in ("DAILY_DIGEST", "EVENING_RECAP")
@@ -33,13 +34,20 @@ def main():
             if not wants or key in sent:
                 continue
             subject, text, body = render(kind, card, sub, demo=not a.live)
-            status = send(sub["email"], subject, text, body, dry_run=not a.send)
+            try:
+                status = send(sub["email"], subject, text, body, dry_run=not a.send)
+            except Exception as e:
+                fails += 1
+                print("FAILED", kind, "->", sub["email"], type(e).__name__, e)
+                continue
             if a.send:
                 SENT.parent.mkdir(exist_ok=True)
                 with open(SENT, "a") as f:
                     f.write(json.dumps({"key": key}) + "\n")
             n += 1
             print(status, kind, "->", sub["email"])
+    if fails:
+        raise SystemExit(f"{fails} mails failed")
     print("mails:", n, "| mode:", "SEND" if a.send else "DRY-RUN (see outbox/)")
 
 

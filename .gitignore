@@ -9,5 +9,4 @@ data/raw/
 .DS_Store
 audit/
 outbox/
-data/alerts_sent.jsonl
 .firebase/
