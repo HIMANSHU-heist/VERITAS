@@ -1,0 +1,1 @@
+{"model": "openai/gpt-oss-120b", "text": "{\"objections\":[{\"text\":\"Cue score is negative (-0.031032384541855397) while the proposal thesis asserts a BUY based on ML prediction, indicating a conflict between the cue model and the trade direction\",\"severity\":\"MED\"}],\"recommend_veto\":false}"}

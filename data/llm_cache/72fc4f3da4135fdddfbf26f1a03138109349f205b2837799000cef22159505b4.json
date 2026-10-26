@@ -1,0 +1,1 @@
+{"model": "openai/gpt-oss-120b", "text": "{\"objections\":[{\"text\":\"Cue score is negative (-0.13546064925798199) indicating a down bias, yet the ML model predicts an up move (p_up=0.669) and the proposal is to BUY, showing a conflict between the cue and model signals.\",\"severity\":\"MED\"}],\"recommend_veto\":false}"}

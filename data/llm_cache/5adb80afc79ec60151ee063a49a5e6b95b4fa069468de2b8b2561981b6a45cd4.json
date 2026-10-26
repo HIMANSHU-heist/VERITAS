@@ -1,0 +1,1 @@
+{"model": "openai/gpt-oss-120b", "text": "{\"objections\":[{\"text\":\"Edge text is only \\\"0.153% of position value\\\", indicating a very minimal expected gain.\",\"severity\":\"LOW\"},{\"text\":\"Cue score is negative (-0.08707796706196641) with low confidence (0.087), suggesting a weak or adverse signal.\",\"severity\":\"MED\"}],\"recommend_veto\":false}"}

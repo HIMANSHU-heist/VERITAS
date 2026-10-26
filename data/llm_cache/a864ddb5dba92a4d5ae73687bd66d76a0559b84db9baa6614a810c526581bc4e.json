@@ -1,0 +1,1 @@
+{"model": "openai/gpt-oss-120b", "text": "{\"objections\":[{\"text\":\"Edge of 0.180% of position value is extremely small, likely insufficient to cover costs and risk\",\"severity\":\"MED\"}],\"recommend_veto\":false}"}

@@ -122,7 +122,7 @@ def decide(as_of, llm=None, use_llm=True, art=None, alpha=0.10, audit=None):
                         llm = llm or LLM(clock=DataClock(["NIFTY"]))
                         ml_llm = {k: v for k, v in ml.items() if k != "edge_pct"}
                         ml_llm.update(p_up=round(p_up, 3),
-                                      edge_text=f"{edge:.3f}% of position value ({edge * 100:.0f} basis points)")
+                                      edge_text=f"{edge:.3f}% of position value")
                         cue = cue_agent(llm, score, drivers, as_of=t)
                         prop, _ = reconcile(strategy_agent(llm, cue, news, ml_llm, her2, as_of=t, lessons=recent_lessons()), action)
                         red = redteam_agent(llm, prop, cue, NO_NEWS, ml_llm, as_of=t)

@@ -1,0 +1,1 @@
+{"model": "openai/gpt-oss-120b", "text": "{\"objections\":[{\"text\":\"Cue score is negative (-0.0179) indicating a slight downward movement, yet the proposal is to BUY\",\"severity\":\"MED\"},{\"text\":\"Cue confidence is very low (0.018), providing weak support for the trade direction\",\"severity\":\"LOW\"}],\"recommend_veto\":false}"}

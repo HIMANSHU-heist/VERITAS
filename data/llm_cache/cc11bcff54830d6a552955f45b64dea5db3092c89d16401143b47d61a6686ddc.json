@@ -1,0 +1,1 @@
+{"model": "openai/gpt-oss-120b", "text": "{\"objections\":[{\"text\":\"Cue score is negative (-0.1468) indicating downward movement, yet the ML model predicts a 69.4% probability of an up move, creating a contradictory signal\",\"severity\":\"MED\"}],\"recommend_veto\":false}"}

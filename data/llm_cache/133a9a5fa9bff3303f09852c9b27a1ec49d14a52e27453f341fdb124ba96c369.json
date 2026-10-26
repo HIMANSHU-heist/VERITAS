@@ -1,0 +1,1 @@
+{"model": "openai/gpt-oss-120b", "text": "{\"objections\":[{\"text\":\"Cue score is negative (-0.041048338338204704) indicating a down bias, while the ML model predicts a strong up probability (p_up=0.687) and a singleton UP conformal set, creating a direct conflict between the two signals\",\"severity\":\"HIGH\"}],\"recommend_veto\":true}"}

@@ -1,0 +1,1 @@
+{"model": "openai/gpt-oss-120b", "text": "{\"objections\":[{\"text\":\"Edge is only 0.153% of position value, which may be insufficient to justify the trade\",\"severity\":\"MED\"},{\"text\":\"Model confidence is low at 0.231, indicating uncertainty in the prediction\",\"severity\":\"MED\"}],\"recommend_veto\":false}"}

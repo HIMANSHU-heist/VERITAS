@@ -1,0 +1,1 @@
+{"model": "openai/gpt-oss-120b", "text": "{\"objections\":[{\"text\":\"Edge is only 0.153% of position value, which is negligible and unlikely to cover transaction costs\",\"severity\":\"MED\"},{\"text\":\"ML predicted up probability 71.6% may not be sufficient confidence for a BUY given the modest signal score 0.095\",\"severity\":\"LOW\"}],\"recommend_veto\":false}"}

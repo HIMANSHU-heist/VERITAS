@@ -1,0 +1,1 @@
+{"model": "openai/gpt-oss-120b", "text": "{\"objections\":[{\"text\":\"The model confidence is only 0.108, indicating a very weak signal for the trade direction.\",\"severity\":\"MED\"},{\"text\":\"The edge is only 0.180% of position value, which may be too small to justify transaction costs.\",\"severity\":\"LOW\"}],\"recommend_veto\":false}"}

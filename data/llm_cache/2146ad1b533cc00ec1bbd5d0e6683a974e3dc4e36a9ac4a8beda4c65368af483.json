@@ -1,0 +1,1 @@
+{"model": "openai/gpt-oss-120b", "text": "{\"objections\":[{\"text\":\"The claimed edge is only 0.153% of position value, which is extremely small and may not cover transaction costs or slippage.\",\"severity\":\"LOW\"}],\"recommend_veto\":false}"}

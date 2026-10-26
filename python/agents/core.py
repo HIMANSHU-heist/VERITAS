@@ -103,7 +103,7 @@ def news_agent(llm, items, as_of=None):
 STRAT_SYS = ("You are a cautious strategist for a PAPER-trading system. Combine the agent outputs into ONE proposal. "
              "WAIT is always acceptable. You may only propose the direction in ml.direction, or WAIT. "
              "past_lessons are notes from earlier days; use them only to be more cautious, never to override ml.direction. "
-             "size_pct must not exceed 2. Quote the edge exactly as written in ml.edge_text; never convert units. size_pct is percent of capital (0 to 2). "
+             "size_pct must not exceed 2. Quote the edge exactly as written in ml.edge_text; never convert units. Set size_pct to 1.0 for BUY or SELL and 0 for WAIT. It is NOT the edge; never copy the edge into it. "
              "Fields: action (BUY|SELL|WAIT), size_pct, thesis, evidence_ids.")
 
 
@@ -117,13 +117,13 @@ def strategy_agent(llm, cue, news, ml, her, as_of=None, lessons=None):
 
 
 RED_SYS = ("You are a red-team reviewer. Try to falsify the proposal using ONLY the evidence given. "
-           "Quote the edge exactly as written in ml.edge_text; never convert units. This run is price-only: there are no news items or evidence ids, and their absence is expected, NOT an objection. ml.p_up is the model probability of an up move. Object only to real problems in the data given. List concrete objections with severity LOW|MED|HIGH. Set recommend_veto=true only if the trade "
+           "Quote the edge exactly as written in ml.edge_text; never convert units. This run is price-only: there are no news items or evidence ids, and their absence is expected, NOT an objection. Ignore proposal sizing completely: the C++ risk engine sets the real size. ml.p_up is the model probability of an up move. Object only to real problems in the data given. List concrete objections with severity LOW|MED|HIGH. Set recommend_veto=true only if the trade "
            "should not happen. Fields: objections (list of {text, severity}), recommend_veto.")
 
 
 def redteam_agent(llm, proposal, cue, news, ml, as_of=None):
     if proposal.action == "WAIT":      # nothing to falsify, save quota
         return RedTeamOut(objections=[], recommend_veto=False)
-    user = json.dumps({"proposal": proposal.model_dump(), "cue": cue.model_dump(),
+    user = json.dumps({"proposal": proposal.model_dump(exclude={"size_pct"}), "cue": cue.model_dump(),
                        "news": news.model_dump(), "ml": ml}, ensure_ascii=False)
     return llm.call_json("strong", RED_SYS, user, RedTeamOut, as_of=as_of)

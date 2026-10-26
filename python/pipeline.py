@@ -54,7 +54,7 @@ def run_pipeline(alpha=0.10, setup=None, llm=None, max_llm_days=None, write=Fals
               "edge_pct": edge, "singleton": single, "direction": action}
         ml_llm = {k: v for k, v in ml.items() if k != "edge_pct"}
         ml_llm.update(p_up=round(p_up, 3),
-                      edge_text=f"{edge:.3f}% of position value ({edge * 100:.0f} basis points)")
+                      edge_text=f"{edge:.3f}% of position value")
 
         eng.send({"type": "new_day"})
         pre = eng.send(order_request(ProposalOut(action=action, size_pct=2.0, thesis="ml"),
