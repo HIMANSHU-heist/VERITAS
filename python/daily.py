@@ -13,6 +13,7 @@ import pandas as pd
 from python.agents import cue_agent, herding, redteam_agent, strategy_agent
 from python.dataclock import DataClock, load_frozen, to_utc
 from python.llm import LLM
+from python.news import NO_NEWS, live_news
 from python.ml.features import SERIES, _utc_ns, series_features
 from python.orchestrator import order_request, reconcile
 from python.risk_client import ROOT, RiskEngine
@@ -20,7 +21,6 @@ from python.schemas import NewsOut, ProposalOut, RedTeamOut
 
 CLASS_NAMES = ("DOWN", "UP")
 CALM = RedTeamOut(objections=[], recommend_veto=False)
-NO_NEWS = NewsOut(score=0.0, confidence=0.0, evidence_ids=[])
 ETF_DIVISOR = 100.0
 
 
@@ -100,6 +100,16 @@ def decide(as_of, llm=None, use_llm=True, art=None, alpha=0.10, audit=None):
                   "edge_pct": edge, "singleton": single, "direction": action}
             card.update(p_up=round(p_up, 4), conformal_set=ml["conformal_set"], edge_pct=round(edge, 4),
                         cue_score=round(score, 3), ml_direction=action)
+            news, news_flagged, heads = NO_NEWS, [], []
+            if use_llm and card['date'] == str(ist_today()):   # never fetch live news for a past date (leakage)
+                llm = llm or LLM(clock=DataClock(['NIFTY']))
+                news, news_flagged, heads = live_news(llm, t)
+            her2 = herding([score, 2 * p_up - 1, news.score])
+            if heads:
+                used = set(news.evidence_ids)
+                card['news'] = {'score': news.score, 'confidence': news.confidence,
+                                'flagged_injection': news_flagged,
+                                'headlines': [{'id': i, 'text': x} for i, x in heads if i in used]}
             pre = eng.send(order_request(ProposalOut(action=action, size_pct=2.0, thesis="ml"),
                                          CALM, her, ml, price, vix, ts))
             final = pre
@@ -113,10 +123,10 @@ def decide(as_of, llm=None, use_llm=True, art=None, alpha=0.10, audit=None):
                         ml_llm.update(p_up=round(p_up, 3),
                                       edge_text=f"{edge:.3f}% of position value ({edge * 100:.0f} basis points)")
                         cue = cue_agent(llm, score, drivers, as_of=t)
-                        prop, _ = reconcile(strategy_agent(llm, cue, NO_NEWS, ml_llm, her, as_of=t), action)
+                        prop, _ = reconcile(strategy_agent(llm, cue, news, ml_llm, her2, as_of=t), action)
                         red = redteam_agent(llm, prop, cue, NO_NEWS, ml_llm, as_of=t)
                         card.update(cue_reason=cue.reason, proposal=prop.model_dump(), red_team=red.model_dump())
-                        req = order_request(prop, red, her, ml, price, vix, ts + 1)
+                        req = order_request(prop, red, her2, ml, price, vix, ts + 1)
                         final = eng.send(req) if req else {**pre, "decision": "WAIT", "gate_failed": ["llm_wait"]}
                     except Exception as e:      # fail closed: any AI problem means no trade
                         card["llm_error"] = f"{type(e).__name__}: {e}"[:200]
