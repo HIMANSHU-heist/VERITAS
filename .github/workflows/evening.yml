@@ -46,6 +46,8 @@ jobs:
         run: python -m python.reflect
       - name: Export candles
         run: python -m python.export_candles
+      - name: Export extras
+        run: python -m python.export_extras
       - name: Emails
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
@@ -60,7 +62,7 @@ jobs:
         run: |
           git config user.name "veritas-bot"
           git config user.email "veritas-bot@users.noreply.github.com"
-          git add data/live_cards.jsonl data/live_audit web/data/today.json web/data/candles.json web/data/data.json
+          git add data/live_cards.jsonl data/live_audit web/data/today.json web/data/candles.json web/data/data.json web/data/veto.json web/data/lessons.json
           if [ -f data/alerts_sent.jsonl ]; then git add -f data/alerts_sent.jsonl; fi
           if [ -f data/lessons.jsonl ]; then git add data/lessons.jsonl; fi
           git commit -m "settled card $(date -u +%F)" || echo "nothing to commit"
