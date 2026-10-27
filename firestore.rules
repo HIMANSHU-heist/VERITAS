@@ -1,8 +1,6 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Each user can only touch their own preferences doc. No email is stored here;
-    // the server reads the verified email from Firebase Auth.
     match /users/{uid} {
       allow read, delete: if request.auth != null && request.auth.uid == uid;
       allow create, update: if request.auth != null && request.auth.uid == uid
@@ -10,6 +8,34 @@ service cloud.firestore {
         && request.resource.data.optIn is bool
         && request.resource.data.digest is bool
         && request.resource.data.instant is bool;
+    }
+    // Paper accounts: users may open one with the fixed starting balance. After that only the server
+    // (admin SDK) can change money. Users may only approve or reject their own pending orders.
+    match /accounts/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow create: if request.auth != null && request.auth.uid == uid
+        && request.auth.token.email_verified == true
+        && request.resource.data.keys().hasOnly(['cash', 'startCash', 'realized', 'createdAt'])
+        && request.resource.data.cash == 1000000
+        && request.resource.data.startCash == 1000000
+        && request.resource.data.realized == 0;
+      match /trades/{id} { allow read: if request.auth != null && request.auth.uid == uid; }
+      match /equity/{id} { allow read: if request.auth != null && request.auth.uid == uid; }
+      match /pending/{id} {
+        allow read: if request.auth != null && request.auth.uid == uid;
+        allow update: if request.auth != null && request.auth.uid == uid
+          && resource.data.status == 'pending'
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])
+          && request.resource.data.status in ['approved', 'rejected'];
+      }
+      match /settings/{doc} {
+        allow read: if request.auth != null && request.auth.uid == uid;
+        allow create, update: if request.auth != null && request.auth.uid == uid
+          && request.resource.data.keys().hasOnly(['mode', 'sizePct'])
+          && request.resource.data.mode in ['auto', 'ask', 'off']
+          && request.resource.data.sizePct is number
+          && request.resource.data.sizePct >= 1 && request.resource.data.sizePct <= 20;
+      }
     }
     match /{document=**} {
       allow read, write: if false;

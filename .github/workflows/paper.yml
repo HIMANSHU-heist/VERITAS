@@ -1,0 +1,44 @@
+name: paper-trader
+on:
+  schedule:
+    - cron: "20,50 4-9 * * 1-5"      # 09:50 to 15:20 IST, every 30 min
+  workflow_dispatch:
+    inputs:
+      send:
+        description: "Actually send approval emails"
+        type: boolean
+        default: false
+      force:
+        description: "TEST: ignore market hours"
+        type: boolean
+        default: false
+permissions:
+  contents: read
+concurrency:
+  group: veritas-paper
+  cancel-in-progress: false
+jobs:
+  paper:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      SEND: ${{ github.event_name == 'schedule' || inputs.send }}
+      FORCE: ${{ inputs.force }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.14"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Run paper accounts
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          GMAIL_USER: ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          APP_URL: https://veritas-trading.web.app/subscribe.html
+        run: |
+          FLAGS=""
+          if [ "$SEND" = "true" ]; then FLAGS="$FLAGS --send"; fi
+          if [ "$FORCE" = "true" ]; then FLAGS="$FLAGS --force"; fi
+          python -m python.paper.run $FLAGS

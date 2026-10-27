@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VERITAS Paper Account</title>
+<style>
+:root{--bg:#131722;--pn:#1e222d;--bd:#2a2e39;--tx:#d1d4dc;--mu:#787b86;--g:#26a69a;--r:#ef5350;--a:#f5a623;--b:#2962ff}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.5 system-ui,sans-serif;font-variant-numeric:tabular-nums}
+header{display:flex;gap:16px;align-items:center;flex-wrap:wrap;padding:10px 16px;border-bottom:1px solid var(--bd)}header a{color:#6d9bff;text-decoration:none}header span{margin-left:auto;color:var(--mu)}
+main{max-width:980px;margin:0 auto;padding:16px}h3{margin:22px 0 8px;font-size:15px}
+.c{background:var(--pn);border:1px solid var(--bd);border-radius:8px;padding:12px}.gr{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+.k{font-size:24px;font-weight:700}small,.mu{color:var(--mu)}.p{color:var(--g)}.n{color:var(--r)}
+table{width:100%;border-collapse:collapse;font-size:14px}td,th{text-align:left;padding:7px;border-bottom:1px solid var(--bd)}.x{overflow-x:auto}
+button,select,input{font:inherit;border-radius:6px;border:1px solid var(--bd);background:var(--bg);color:var(--tx);padding:7px 12px}
+button.pr{background:var(--b);border-color:var(--b);color:#fff;font-weight:600;cursor:pointer}button.ok{background:var(--g);border-color:var(--g);color:#06201d;cursor:pointer}button.no{background:none;color:var(--r);border-color:var(--r);cursor:pointer}
+.pd{border-left:3px solid var(--a);margin-bottom:8px}.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+</style></head><body>
+<header><a href="./">&larr; Dashboard</a><b>VERITAS · Paper account</b><span id="aid"></span></header>
+<main id="m">Loading…</main>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+import { getFirestore, doc, setDoc, updateDoc, onSnapshot, collection, query, where, orderBy, limit, serverTimestamp }
+  from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import { firebaseConfig } from "./firebase-config.js";
+const app = initializeApp(firebaseConfig), auth = getAuth(app), db = getFirestore(app);
+const m = document.getElementById("m");
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const inr = n => (n < 0 ? "-" : "") + "₹" + Math.abs(n).toLocaleString("en-IN", {maximumFractionDigits: 2});
+const cl = n => n >= 0 ? "p" : "n";
+const dt = t => (t && t.toDate ? t.toDate() : new Date(t)).toLocaleString("en-IN", {dateStyle: "medium", timeStyle: "short"});
+let U = null, unsubs = [], S = {acct: null, trades: [], pend: [], eq: [], prefs: {mode: "auto", sizePct: 5}};
+
+function curve(v) {
+  if (v.length < 2) return '<p class="mu">The equity curve appears after the agent has run on two days.</p>';
+  const W = 640, H = 150, lo = Math.min(...v), hi = Math.max(...v), x = i => 6 + (W - 12) * i / (v.length - 1), y = z => 8 + (H - 16) * (1 - (z - lo) / ((hi - lo) || 1));
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%"><polyline fill="none" stroke="#6d9bff" stroke-width="2" points="${v.map((z, i) => x(i).toFixed(1) + "," + y(z).toFixed(1)).join(" ")}"/></svg>`;
+}
+
+function draw() {
+  if (!U) return;
+  document.getElementById("aid").textContent = "ID VTS-" + U.uid.slice(0, 8).toUpperCase();
+  const a = S.acct;
+  if (!a) {
+    m.innerHTML = `<div class="c"><b>Open a paper account</b><p class="mu">You get ₹10,00,000 of fake money. The VERITAS agent trades it for you using the same hard rules as the dashboard. Nothing real is ever traded.</p>
+      ${U.emailVerified ? '<button class="pr" id="open">Open paper account</button>' : '<p class="n">Verify your email first on the alerts page, then come back.</p>'}</div>`;
+    return;
+  }
+  const px = a.lastPrice || 0, hs = Object.entries(a.holdings || {});
+  const eq = a.equity ?? a.cash, pnl = eq - a.startCash, real = a.realized || 0;
+  m.innerHTML = `<div class="gr">
+    <div class="c"><div class="k">${inr(eq)}</div><small>Total value</small></div>
+    <div class="c"><div class="k ${cl(pnl)}">${inr(pnl)}</div><small>Profit or loss (${(pnl / a.startCash * 100).toFixed(2)}%)</small></div>
+    <div class="c"><div class="k">${inr(a.cash)}</div><small>Cash</small></div>
+    <div class="c"><div class="k ${cl(real)}">${inr(real)}</div><small>Booked profit or loss</small></div></div>
+  ${S.pend.length ? "<h3>Needs your approval</h3>" + S.pend.map(p => `<div class="c pd"><div class="row"><b>${esc(p.side)} ${p.qty} ${esc(p.symbol)}</b><span class="mu">at about ${inr(p.price)}, confidence ${p.conf}</span></div>
+      <p>${esc(p.reason)}</p><div class="row"><button class="ok" data-id="${esc(p.id)}" data-s="approved">Approve</button><button class="no" data-id="${esc(p.id)}" data-s="rejected">Reject</button><small>Expires ${dt(p.expiresAt)}. The trade runs at the next market check, within 30 minutes.</small></div></div>`).join("") : ""}
+  <h3>Holdings</h3><div class="c x">${hs.length ? `<table><tr><th>Symbol<th>Qty<th>Avg cost<th>Last<th>Unrealised<th>Since</tr>` + hs.map(([k, h]) => { const u = (px - h.avg) * h.qty; return `<tr><td>${esc(k)}<td>${h.qty}<td>${inr(h.avg)}<td>${inr(px)}<td class="${cl(u)}">${inr(u)}<td>${esc(h.since)}</tr>`; }).join("") + "</table>" : '<span class="mu">No open position. Sitting in cash is a valid decision.</span>'}</div>
+  <h3>Value over time</h3><div class="c">${curve(S.eq.map(e => e.equity))}</div>
+  <h3>Trade history</h3><div class="c x">${S.trades.length ? `<table><tr><th>When<th>Side<th>Qty<th>Price<th>Fees<th>Profit or loss<th>Why</tr>` + S.trades.map(t => `<tr><td>${dt(t.ts)}<td>${esc(t.side)}<td>${t.qty}<td>${inr(t.price)}<td>${inr(t.fee)}<td class="${t.pnl == null ? "mu" : cl(t.pnl)}">${t.pnl == null ? "open" : inr(t.pnl)}<td>${esc(t.source)}: ${esc(t.reason)}</tr>`).join("") + "</table>" : '<span class="mu">No trades yet.</span>'}</div>
+  <h3>Agent settings</h3><div class="c row"><label>Mode <select id="mode"><option value="auto">Auto: trade when confident, ask when unsure</option><option value="ask">Ask me before every trade</option><option value="off">No new trades (exits still run)</option></select></label>
+    <label>Position size % <input id="size" type="number" min="1" max="20" step="1" value="${S.prefs.sizePct}" style="width:80px"></label><button class="pr" id="save">Save</button><small id="sv"></small></div>
+  <p class="mu" style="margin-top:28px;font-size:13px">Paper-trading research demo. Fake money, no real orders, not investment advice. The backtest is net negative after costs, so expect this account to lose money more often than it makes it. Hard stops (VIX stress, kill-switch) can never be overridden.</p>`;
+  document.getElementById("mode").value = S.prefs.mode;
+}
+
+m.addEventListener("click", async e => {
+  const b = e.target.closest("button"); if (!b) return;
+  try {
+    if (b.id === "open") await setDoc(doc(db, "accounts", U.uid), {cash: 1000000, startCash: 1000000, realized: 0, createdAt: serverTimestamp()});
+    else if (b.dataset.id) { b.disabled = true; await updateDoc(doc(db, "accounts", U.uid, "pending", b.dataset.id), {status: b.dataset.s}); }
+    else if (b.id === "save") {
+      await setDoc(doc(db, "accounts", U.uid, "settings", "prefs"), {mode: document.getElementById("mode").value, sizePct: Number(document.getElementById("size").value)});
+      document.getElementById("sv").textContent = "Saved";
+    }
+  } catch (err) { alert("Could not do that: " + (err.code || err)); }
+});
+
+onAuthStateChanged(auth, u => {
+  unsubs.forEach(f => f()); unsubs = []; U = u;
+  if (!u) { document.getElementById("aid").textContent = ""; m.innerHTML = '<div class="c">Sign in to see your paper account. <a href="subscribe.html" style="color:#6d9bff">Sign in or sign up</a></div>'; return; }
+  const a = doc(db, "accounts", u.uid), on = (q, f) => unsubs.push(onSnapshot(q, f, err => console.warn(err.code)));
+  on(a, s => { S.acct = s.exists() ? s.data() : null; draw(); });
+  on(query(collection(a, "trades"), orderBy("ts", "desc"), limit(30)), s => { S.trades = s.docs.map(d => d.data()); draw(); });
+  on(query(collection(a, "pending"), where("status", "==", "pending")), s => { S.pend = s.docs.map(d => ({id: d.id, ...d.data()})); draw(); });
+  on(query(collection(a, "equity"), orderBy("date")), s => { S.eq = s.docs.map(d => d.data()); draw(); });
+  on(doc(a, "settings", "prefs"), s => { if (s.exists()) S.prefs = s.data(); draw(); });
+});
+</script></body></html>
