@@ -1,6 +1,8 @@
 """Runs every user's paper account: approved orders, exits, new signals, equity snapshot.
 Fake money only. Hard gates are never overridden; users may approve soft-gate trades."""
 import argparse
+import hashlib
+import hmac
 import html
 import json
 import os
@@ -15,6 +17,7 @@ from python.risk_client import ROOT
 
 IST = timezone(timedelta(hours=5, minutes=30))
 VALID_HOURS = 6
+MAX_FUNDS = 5_000_000
 
 
 def market_open(now):
@@ -92,6 +95,36 @@ def run_account(db, doc, card, price, now, today, send_mail, can_trade):
 
     def equity():
         return float(acct["cash"]) + sum(h["qty"] * price for h in (acct.get("holdings") or {}).values())
+
+    # 0) wallet top-ups and manual orders. PIN proof is checked against the write-only key.
+    pin = ref.collection("security").document("pin").get()
+    key = bytes.fromhex(pin.to_dict()["key"]) if pin.exists else None
+
+    def ok(msg, proof):
+        return bool(key) and hmac.compare_digest(hmac.new(key, msg.encode(), hashlib.sha256).hexdigest(), proof)
+
+    for fr in ref.collection("fundreqs").where("status", "==", "requested").stream():
+        d = fr.to_dict()
+        total = float(acct.get("startCash", 0)) + d["amount"]
+        if not ok(f"{fr.id}|FUND|{d['amount']}", d["proof"]):
+            fr.reference.update({"status": "rejected", "note": "Wrong PIN"})
+        elif total > MAX_FUNDS:
+            fr.reference.update({"status": "rejected", "note": "Account limit reached"})
+        else:
+            upd = {"cash": round(float(acct["cash"]) + d["amount"], 2), "startCash": total}
+            ref.update(upd)
+            acct = {**acct, **upd}
+            fr.reference.update({"status": "success", "paidAt": now, "txn": "SIM" + fr.id[:10].upper()})
+            log.append(f"added {d['amount']} (simulated)")
+    for od in ref.collection("orders").where("status", "==", "placed").stream():
+        d = od.to_dict()
+        if not ok(f"{od.id}|{d['side']}|{d['qty']}", d["proof"]):
+            od.reference.update({"status": "rejected", "note": "Wrong PIN"})
+        elif can_trade:
+            if trade(d["side"], d["qty"], "your order", 0, "you", f"ord-{od.id}"):
+                od.reference.update({"status": "executed", "executedAt": now})
+            else:
+                od.reference.update({"status": "rejected", "note": "Not enough cash or shares"})
 
     # 1) approved / expired pending orders
     for pd_ in ref.collection("pending").where("status", "in", ["pending", "approved"]).stream():

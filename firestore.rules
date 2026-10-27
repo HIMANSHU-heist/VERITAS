@@ -15,7 +15,8 @@ service cloud.firestore {
       allow read: if request.auth != null && request.auth.uid == uid;
       allow create: if request.auth != null && request.auth.uid == uid
         && request.auth.token.email_verified == true
-        && request.resource.data.keys().hasOnly(['cash', 'startCash', 'realized', 'createdAt'])
+        && request.resource.data.keys().hasOnly(['name', 'cash', 'startCash', 'realized', 'createdAt'])
+        && request.resource.data.name is string && request.resource.data.name.size() >= 2 && request.resource.data.name.size() <= 40
         && request.resource.data.cash == 1000000
         && request.resource.data.startCash == 1000000
         && request.resource.data.realized == 0;
@@ -27,6 +28,31 @@ service cloud.firestore {
           && resource.data.status == 'pending'
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])
           && request.resource.data.status in ['approved', 'rejected'];
+      }
+      match /security/{doc} {
+        allow read: if request.auth != null && request.auth.uid == uid && doc == 'salt';
+        allow create: if request.auth != null && request.auth.uid == uid
+          && ((doc == 'salt' && request.resource.data.keys().hasOnly(['salt']) && request.resource.data.salt.size() == 32)
+           || (doc == 'pin' && request.resource.data.keys().hasOnly(['key']) && request.resource.data.key.size() == 64));
+      }
+      match /orders/{id} {
+        allow read: if request.auth != null && request.auth.uid == uid;
+        allow create: if request.auth != null && request.auth.uid == uid
+          && request.resource.data.keys().hasOnly(['side', 'qty', 'status', 'proof', 'createdAt'])
+          && request.resource.data.side in ['BUY', 'SELL'] && request.resource.data.qty is int
+          && request.resource.data.qty >= 1 && request.resource.data.qty <= 5000
+          && request.resource.data.status == 'placed' && request.resource.data.proof.size() == 64;
+        allow update: if request.auth != null && request.auth.uid == uid && resource.data.status == 'placed'
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])
+          && request.resource.data.status == 'cancelled';
+      }
+      match /fundreqs/{id} {
+        allow read: if request.auth != null && request.auth.uid == uid;
+        allow create: if request.auth != null && request.auth.uid == uid
+          && request.resource.data.keys().hasOnly(['amount', 'method', 'status', 'proof', 'createdAt'])
+          && request.resource.data.amount is int && request.resource.data.amount >= 1000 && request.resource.data.amount <= 1000000
+          && request.resource.data.method in ['UPI', 'Card', 'NetBanking']
+          && request.resource.data.status == 'requested' && request.resource.data.proof.size() == 64;
       }
       match /settings/{doc} {
         allow read: if request.auth != null && request.auth.uid == uid;
