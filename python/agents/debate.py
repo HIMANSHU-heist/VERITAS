@@ -6,17 +6,17 @@ from pydantic import BaseModel, Field
 
 
 class Arg(BaseModel):
-    argument: str = Field(max_length=300)
+    argument: str = Field(max_length=700)
     strength: float = Field(ge=0, le=1)
 
 
 class Judge(BaseModel):
     verdict: Literal["BUY", "SELL", "WAIT"]
-    reason: str = Field(max_length=300)
+    reason: str = Field(max_length=700)
 
 
 RULES = ("Use ONLY the numbers given. Never invent data. Quote edge exactly as edge_text; never convert units. "
-         "This is a PAPER-trading system. ")
+         "This is a PAPER-trading system. Keep every text field under 200 characters. ")
 BULL = "You argue FOR taking the proposed trade in ml_direction. " + RULES + "Fields: argument, strength (0..1)."
 BEAR = "You argue AGAINST taking the proposed trade. " + RULES + "Fields: argument, strength (0..1)."
 JUDGE = ("You are a cautious judge. Read the bull and bear arguments. You may only choose ml_direction or WAIT. "
