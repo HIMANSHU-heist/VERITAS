@@ -89,6 +89,42 @@ function market() {
   return `<h3>Market</h3>${sig}<div class="c"><div class="row"><b>NIFTY 50</b><span class="k">${last ? last.close.toLocaleString("en-IN") : "-"}</span><span class="${cl(chg)}">${chg.toFixed(2)}%</span><small>NIFTYBEES last ${inr(S.acct.lastPrice || 0)}</small></div>${chart(c)}</div><h3>Agents</h3><div class="gr">` + boxes.join("") + `</div>`;
 }
 
+function advise(kind) {
+  const a = S.acct, px = a.lastPrice || 0, ag = (S.mk && S.mk.a) || {}, k = S.mk && S.mk.t && S.mk.t.card;
+  const pos = (a.holdings || {}).NIFTYBEES, eq = a.equity ?? a.cash;
+  const rk = ag.risk ? ag.risk.scale : 1, rm = ag.regime ? ag.regime.conf_mult : 1;
+  const gates = (k && k.gate_failed) || [];
+  const hard = gates.filter(g => ["vix_stress", "kill_switch", "data_invalid", "rate_limit"].includes(g));
+  const judge = ag.debate ? ag.debate.judge.verdict : null;
+  const pctSize = S.prefs.sizePct || 5;
+  const why = [];
+  let qty = 0, stance = "", tone = "mu";
+  if (!px) return {stance: "No price yet", qty: 0, why: ["Waiting for the next market check."], tone};
+  if (kind === "BUY") {
+    const full = Math.floor(eq * (pctSize / 100) * rk * rm / px), dir = k ? k.ml_direction : null;
+    why.push(`Full size = ${pctSize}% of equity x risk ${rk} x regime ${rm} = ${full} units.`);
+    if (hard.length) { stance = "AVOID"; tone = "n"; why.push("Safety gate active: " + hard.join(", ") + "."); }
+    else if (dir === "SELL") { stance = "AGAINST SIGNAL"; tone = "n"; qty = Math.floor(full * 0.2); why.push("Model leans SELL today. If you still buy, keep it tiny."); }
+    else if (k && k.decision === "TRADE" && dir === "BUY") { stance = "AGREE"; tone = "p"; qty = full; why.push("Model says BUY and all gates passed."); }
+    else { stance = "WEAK, WAIT"; qty = Math.floor(full * 0.4); why.push("No clear edge today (" + (gates.join(", ") || "no signal") + ")."); }
+    if (judge === "WAIT" && qty) { qty = Math.floor(qty * 0.5); why.push("Debate judge says WAIT, so size is halved."); }
+    qty = Math.max(0, Math.min(qty, Math.floor(a.cash / (px * 1.002))));
+    if (qty) why.push(`If you buy: stop-loss near ${inr(px * 0.98)} (-2%), target near ${inr(px * 1.03)} (+3%), exit within 5 days.`);
+  } else {
+    if (!pos || !pos.qty) return {stance: "NOTHING TO SELL", qty: 0, tone: "n", why: ["You hold no NIFTYBEES. Short selling is not supported."]};
+    const pnl = (px / pos.avg - 1) * 100, days = pos.since ? Math.floor((Date.now() - new Date(pos.since)) / 864e5) : 0;
+    why.push(`You hold ${pos.qty} at ${inr(pos.avg)}. Now ${pnl.toFixed(2)}%, held ${days} day(s).`);
+    if (pnl <= -2) { stance = "STOP-LOSS HIT"; tone = "n"; qty = pos.qty; why.push("Down 2% or more: cut the loss."); }
+    else if (pnl >= 3) { stance = "TARGET HIT"; tone = "p"; qty = pos.qty; why.push("Up 3% or more: book the profit."); }
+    else if (days >= 5) { stance = "TIME EXIT"; qty = pos.qty; why.push("Held 5 days or more: close it."); }
+    else if (k && k.ml_direction === "SELL" && k.decision === "TRADE") { stance = "SIGNAL SAYS SELL"; tone = "p"; qty = pos.qty; why.push("Model says SELL and gates passed."); }
+    else if (k && k.ml_direction === "SELL") { stance = "LEAN SELL"; qty = Math.ceil(pos.qty / 2); why.push("Model leans SELL but no clear edge: trim half."); }
+    else { stance = "HOLD"; why.push("No stop, target or sell signal yet."); }
+  }
+  why.push("Round-trip costs are about 0.15%, so tiny moves lose money.");
+  return {stance, qty, why, tone};
+}
+
 function draw() {
     if (!U) return;
     const a = S.acct;
@@ -134,6 +170,11 @@ function draw() {
       <p class="row"><button class="${kind === "SELL" ? "sell" : kind === "BUY" ? "buy" : "pr"}" id="go">${kind === "fund" ? "Pay" : "Place " + kind.toLowerCase() + " order"}</button><button id="x">Close</button></p><small id="msg" class="n"></small>`;
     const est = () => { const q = +($("qty") || {}).value; if ($("est")) $("est").textContent = q ? "Estimated " + inr(q * px) : ""; };
     if ($("qty")) { $("qty").oninput = est; est(); }
+  if (kind !== "fund") {
+    const ad = advise(kind);
+    dlg.querySelector("b").insertAdjacentHTML("afterend", `<div class="c" style="margin:10px 0"><b>Advisor: <span class="${ad.tone}">${esc(ad.stance)}</span></b><div>Suggested quantity: <b>${ad.qty}</b> ${ad.qty ? '<button type="button" id="use">Use</button>' : ""}</div><small>${ad.why.map(esc).join("<br>")}</small></div>`);
+    if ($("use")) $("use").onclick = () => { $("qty").value = ad.qty; est(); };
+  }
     $("x").onclick = () => dlg.close();
     $("go").onclick = async () => {
       const msg = $("msg"); msg.textContent = "";
