@@ -1,0 +1,1 @@
+{"model": "openai/gpt-oss-120b", "text": "{\"objections\":[{\"text\":\"Cue score is slightly negative (-0.012923179386607314) despite a high model up probability (p_up=0.728), indicating contradictory signals\",\"severity\":\"MED\"},{\"text\":\"Cue confidence is very low (0.013), making the directional guidance unreliable\",\"severity\":\"MED\"}],\"recommend_veto\":false}"}

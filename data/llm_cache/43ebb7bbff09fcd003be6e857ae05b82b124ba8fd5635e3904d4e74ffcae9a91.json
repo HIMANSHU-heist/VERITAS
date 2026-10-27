@@ -1,0 +1,1 @@
+{"model": "openai/gpt-oss-120b", "text": "{\"objections\":[{\"text\":\"Edge is only 0.153% of position value, which is negligible and may not justify the trade\",\"severity\":\"LOW\"}],\"recommend_veto\":false}"}

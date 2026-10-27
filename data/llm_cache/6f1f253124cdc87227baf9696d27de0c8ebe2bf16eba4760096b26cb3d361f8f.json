@@ -1,0 +1,1 @@
+{"model": "openai/gpt-oss-120b", "text": "{\"objections\":[{\"text\":\"Edge is only 0.153% of position value, which is extremely small and may not justify the trade cost\",\"severity\":\"LOW\"},{\"text\":\"Cue confidence is 0.002, indicating very low confidence in the signal\",\"severity\":\"LOW\"}],\"recommend_veto\":false}"}

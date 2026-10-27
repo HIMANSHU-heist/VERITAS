@@ -1,0 +1,1 @@
+{"model": "openai/gpt-oss-120b", "text": "{\"objections\":[{\"text\":\"Cue confidence is only 0.009, indicating very weak statistical confidence in the signal.\",\"severity\":\"LOW\"},{\"text\":\"No news evidence provided (news score 0.0, confidence 0.0), limiting contextual support for the trade.\",\"severity\":\"LOW\"}],\"recommend_veto\":false}"}

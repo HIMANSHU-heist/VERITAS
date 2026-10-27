@@ -1,0 +1,1 @@
+{"model": "openai/gpt-oss-120b", "text": "{\"action\":\"SELL\",\"size_pct\":1.0,\"thesis\":\"ML model predicts SELL with conformal set DOWN; cue indicates negative score driven by CRUDE and SP500 outweighing NIKKEI uplift.\",\"evidence_ids\":[]}"}

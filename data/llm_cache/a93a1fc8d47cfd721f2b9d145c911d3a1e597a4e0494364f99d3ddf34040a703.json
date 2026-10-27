@@ -1,0 +1,1 @@
+{"model": "openai/gpt-oss-120b", "text": "{\"objections\":[{\"text\":\"The proposal provides no evidence identifiers (evidence_ids is empty) despite a non-zero model probability, limiting verification of the signal basis.\",\"severity\":\"LOW\"}],\"recommend_veto\":false}"}

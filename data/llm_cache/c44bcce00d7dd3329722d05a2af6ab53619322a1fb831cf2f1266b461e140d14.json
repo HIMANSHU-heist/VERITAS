@@ -1,0 +1,1 @@
+{"model": "openai/gpt-oss-120b", "text": "{\"objections\":[{\"text\":\"Cue score is only 0.051, indicating a weak signal despite the thesis of strong upward momentum\",\"severity\":\"MED\"},{\"text\":\"Edge of 0.738% of position value may be too small to justify the trade\",\"severity\":\"LOW\"}],\"recommend_veto\":false}"}

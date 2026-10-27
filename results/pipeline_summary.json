@@ -2,25 +2,25 @@
   "alpha": 0.1,
   "n_days": 243,
   "pipeline": {
-    "n_trades": 27,
-    "win_rate": 0.48148148148148145,
-    "gross_pnl": 95.63,
-    "cost": 784.01,
-    "net_pnl": -688.38,
-    "net_bps_per_trade": -12.75,
-    "max_drawdown_inr": 1535.15,
-    "max_drawdown_pct_capital": 0.154
+    "n_trades": 44,
+    "win_rate": 0.4772727272727273,
+    "gross_pnl": 737.7,
+    "cost": 1277.38,
+    "net_pnl": -539.68,
+    "net_bps_per_trade": -6.13,
+    "max_drawdown_inr": 2142.41,
+    "max_drawdown_pct_capital": 0.214
   },
   "stats": {
     "candidates": 50,
     "llm_wait": 0,
     "direction_mismatch": 0,
-    "redteam_veto": 23,
+    "redteam_veto": 6,
     "llm_errors": 0,
     "llm_skipped": 0
   },
   "audit": {
     "audit": "OK",
-    "lines": 564
+    "lines": 581
   }
 }
