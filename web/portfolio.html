@@ -51,7 +51,45 @@
     return `<svg viewBox="0 0 ${W} ${H}" style="width:100%"><polyline fill="none" stroke="#6d9bff" stroke-width="2" points="${v.map((z, i) => x(i).toFixed(1) + "," + y(z).toFixed(1)).join(" ")}"/></svg>`;
   }
 
-  function draw() {
+  const J = u => fetch(u + "?t=" + Date.now()).then(r => r.ok ? r.json() : null).catch(() => null);
+S.mk = {};
+Promise.all(["candles", "agents", "today", "veto", "lessons"].map(n => J("data/" + n + ".json"))).then(([c, a, t, v, l]) => { S.mk = {c, a, t, v, l}; draw(); });
+
+function chart(c) {
+  if (!c || c.length < 2) return "";
+  c = c.slice(-90);
+  const W = 640, H = 200, lo = Math.min(...c.map(x => x.low)), hi = Math.max(...c.map(x => x.high)), bw = (W - 12) / c.length;
+  const y = z => 8 + (H - 16) * (1 - (z - lo) / ((hi - lo) || 1));
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%">` + c.map((x, i) => {
+    const cx = 6 + bw * i + bw / 2, col = x.close >= x.open ? "#26a69a" : "#ef5350";
+    const top = y(Math.max(x.open, x.close)), h = Math.max(1, Math.abs(y(x.open) - y(x.close)));
+    return `<line x1="${cx.toFixed(1)}" x2="${cx.toFixed(1)}" y1="${y(x.high).toFixed(1)}" y2="${y(x.low).toFixed(1)}" stroke="${col}"/><rect x="${(cx - bw * 0.35).toFixed(1)}" y="${top.toFixed(1)}" width="${(bw * 0.7).toFixed(1)}" height="${h.toFixed(1)}" fill="${col}"/>`;
+  }).join("") + "</svg>";
+}
+
+function market() {
+  const {c, a, t, v, l} = S.mk, k = t && t.card, ag = a || {}, rg = ag.regime, rk = ag.risk, db = ag.debate, pf = ag.portfolio, dr = ag.drift;
+  const box = (n, tag, body) => `<div class="c"><b>${esc(n)}</b> <small>${esc(tag)}</small><div style="margin-top:4px">${esc(body || "Waiting for first run")}</div></div>`;
+  const last = c && c.length ? c[c.length - 1] : null, prev = c && c.length > 1 ? c[c.length - 2] : null;
+  const chg = last && prev ? (last.close / prev.close - 1) * 100 : 0;
+  const sig = k ? `<div class="c" style="margin-bottom:10px"><div class="row"><b>VERITAS signal ${esc(k.date)}</b><span class="st ${k.decision === "TRADE" ? "p" : "mu"}">${esc(k.decision)}</span><small>model says ${esc(k.ml_direction)}, P(up) ${k.p_up}, edge ${k.edge_pct}%</small></div>${k.counterfactual ? `<small>${esc(k.counterfactual)}</small>` : ""}<div class="row" style="margin-top:8px"><button class="buy" data-d="BUY">Buy NIFTYBEES</button><button class="sell" data-d="SELL">Sell NIFTYBEES</button><small>Signal is advice only. You decide.</small></div></div>` : "";
+  const lz = l && l.length ? l[l.length - 1] : null;
+  const boxes = [
+    box("Cue Agent", "AI", k ? "Cue score " + k.cue_score : ""),
+    box("News Agent", "AI", k && k.news ? "Score " + k.news.score + ", confidence " + k.news.confidence + ", " + k.news.headlines.length + " headlines" : ""),
+    box("Red-team Agent", "AI", v ? v.n_vetoes + " vetoes, " + v.good_vetoes + " right, net effect " + inr(v.net_effect_inr) : ""),
+    box("Reflection Agent", "AI", lz ? lz.verdict + ": " + lz.lesson : ""),
+    box("Bull, Bear and Judge", "AI", db ? "Judge: " + db.judge.verdict + ". " + db.judge.reason : ""),
+    box("Regime Agent", "Code", rg ? rg.label + " (x" + rg.conf_mult + "). " + rg.why : ""),
+    box("Dynamic Risk Agent", "Code", rk ? "Size x" + rk.scale + ". " + rk.why.join("; ") : ""),
+    box("Portfolio Agent", "Code", pf ? Object.entries(pf.weights).map(e => e[0] + " " + Math.round(e[1] * 100) + "%").join(", ") + ". " + pf.flag : ""),
+    box("Drift Monitor", "ML", dr ? dr.status + ": accuracy " + dr.accuracy + ", coverage " + dr.coverage : ""),
+    box("C++ Risk Gate", "Hard rules", k ? (k.gate_failed && k.gate_failed.length ? "Blocked by: " + k.gate_failed.join(", ") : "All gates passed") + (k.audit_ok ? ". Audit chain OK" : "") : "")
+  ];
+  return `<h3>Market</h3>${sig}<div class="c"><div class="row"><b>NIFTY 50</b><span class="k">${last ? last.close.toLocaleString("en-IN") : "-"}</span><span class="${cl(chg)}">${chg.toFixed(2)}%</span><small>NIFTYBEES last ${inr(S.acct.lastPrice || 0)}</small></div>${chart(c)}</div><h3>Agents</h3><div class="gr">` + boxes.join("") + `</div>`;
+}
+
+function draw() {
     if (!U) return;
     const a = S.acct;
     if (!a) {
@@ -75,7 +113,7 @@
       <div class="c"><div class="k ${cl(real)}">${inr(real)}</div><small>Booked profit or loss</small></div></div>
     ${S.pend.length ? "<h3>Agent needs your approval</h3>" + S.pend.map(p => `<div class="c pd"><div class="row"><b>${esc(p.side)} ${p.qty} ${esc(p.symbol)}</b><span class="mu">at about ${inr(p.price)}, confidence ${p.conf}</span></div><p>${esc(p.reason)}</p>
       <div class="row"><button class="buy" data-id="${esc(p.id)}" data-s="approved">Approve</button><button class="no" data-id="${esc(p.id)}" data-s="rejected">Reject</button><small>Expires ${dt(p.expiresAt)}</small></div></div>`).join("") : ""}
-    <h3>Holdings</h3><div class="c x">${hs.length ? `<table><tr><th>Symbol<th>Qty<th>Avg cost<th>Last<th>Unrealised<th>Since</tr>` + hs.map(([k, h]) => { const u = (px - h.avg) * h.qty; return `<tr><td>${esc(k)}<td>${h.qty}<td>${inr(h.avg)}<td>${inr(px)}<td class="${cl(u)}">${inr(u)}<td>${esc(h.since)}</tr>`; }).join("") + "</table>" : '<span class="mu">No open position.</span>'}</div>
+    ${market()}<h3>Holdings</h3><div class="c x">${hs.length ? `<table><tr><th>Symbol<th>Qty<th>Avg cost<th>Last<th>Unrealised<th>Since</tr>` + hs.map(([k, h]) => { const u = (px - h.avg) * h.qty; return `<tr><td>${esc(k)}<td>${h.qty}<td>${inr(h.avg)}<td>${inr(px)}<td class="${cl(u)}">${inr(u)}<td>${esc(h.since)}</tr>`; }).join("") + "</table>" : '<span class="mu">No open position.</span>'}</div>
     <h3>Your orders</h3><div class="c x">${S.ords.length ? `<table><tr><th>When<th>Side<th>Qty<th>Status<th></tr>` + S.ords.map(o => `<tr><td>${dt(o.createdAt)}<td>${esc(o.side)}<td>${o.qty}<td><span class="st ${stc(o.status)}">${esc(o.status)}</span> ${esc(o.note || "")}<td>${o.status === "placed" ? `<button class="no" data-oc="${esc(o.id)}">Cancel</button>` : ""}</tr>`).join("") + "</table><small class='mu'>Orders run at the next market check, within 30 minutes in market hours.</small>" : '<span class="mu">No orders yet.</span>'}</div>
     <h3>Payments (simulated)</h3><div class="c x">${S.funds.length ? `<table><tr><th>When<th>Method<th>Amount<th>Status<th>Ref</tr>` + S.funds.map(f => `<tr><td>${dt(f.createdAt)}<td>${esc(f.method)}<td>${inr(f.amount)}<td><span class="st ${stc(f.status)}">${esc(f.status)}</span> ${esc(f.note || "")}<td>${esc(f.txn || "")}</tr>`).join("") + "</table>" : '<span class="mu">No payments yet.</span>'}</div>
     <h3>Value over time</h3><div class="c">${curve(S.eq.map(e => e.equity))}</div>

@@ -27,6 +27,23 @@ def render(kind, card, sub, demo=True):
         rows.append((f"Red-team {o['severity']}", o["text"]))
     if kind == "EVENING_RECAP":
         rows.append(("Paper P&L net of costs (INR)", card.get("net", 0.0)))
+    try:
+        import json
+        from pathlib import Path
+        ag = json.loads((Path(__file__).resolve().parents[2] / "web" / "data" / "agents.json").read_text())
+        if ag.get("date") == d:
+            if ag.get("regime"):
+                rows.append(("Regime agent", f"{ag['regime']['label']}: {ag['regime']['why']}"))
+            if ag.get("risk"):
+                rows.append(("Risk agent", f"size x{ag['risk']['scale']}: " + "; ".join(ag["risk"]["why"])))
+            if ag.get("debate"):
+                rows.append(("Debate judge", f"{ag['debate']['judge']['verdict']}: {ag['debate']['judge']['reason']}"))
+            if ag.get("drift"):
+                rows.append(("Drift monitor", f"{ag['drift']['status']}, accuracy {ag['drift']['accuracy']}"))
+            if ag.get("portfolio"):
+                rows.append(("Portfolio agent", ag["portfolio"]["flag"]))
+    except Exception:
+        pass
     tag = "[DEMO, historical card] " if demo else ""
     subject = f"{tag}[VERITAS paper] {TITLES[kind]}: {dec} ({d})"
     text = "\n".join(f"{k}: {v}" for k, v in rows) + "\n\n" + DISCLAIMER
