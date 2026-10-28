@@ -1,3 +1,3 @@
 {"date": "2026-10-26", "verdict": "GOOD", "lesson": "Abstain when the expected edge is below the required threshold, even if the market moves positively."}
 {"date": "2026-10-27", "verdict": "GOOD", "lesson": "Trade only when the expected edge exceeds the cost threshold"}
-{"date": "2026-10-28", "verdict": "BAD", "lesson": "Refine edge threshold to avoid missing profitable trades when model predicts slight negative edge."}
+{"date": "2026-10-28", "verdict": "NEUTRAL", "lesson": "Abstain when the expected edge is negative, even if the actual return turns out positive."}
