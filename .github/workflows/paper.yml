@@ -1,7 +1,7 @@
 name: paper-trader
 on:
   schedule:
-    - cron: "20,50 4-9 * * 1-5"      # 09:50 to 15:20 IST, every 30 min
+    - cron: "7,22,37,52 4-9 * * 1-5"      # every 15 min in market hours
   workflow_dispatch:
     inputs:
       send:

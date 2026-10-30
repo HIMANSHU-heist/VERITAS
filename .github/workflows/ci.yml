@@ -1,0 +1,27 @@
+name: ci
+on:
+  push:
+    branches: [main]
+    paths: ["python/**", "cpp/**", "requirements.txt", "configs/**"]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.14"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Build C++ risk engine
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y cmake nlohmann-json3-dev libssl-dev
+          cmake -S cpp -B cpp/build
+          cmake --build cpp/build
+      - run: pytest -q

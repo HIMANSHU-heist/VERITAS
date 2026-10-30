@@ -10,3 +10,4 @@ data/raw/
 audit/
 outbox/
 .firebase/
+data/alerts_sent.jsonl

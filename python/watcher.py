@@ -179,6 +179,47 @@ def triggers(snaps, scale=1.0):
     return out
 
 
+# ---------- parallel collectors (fast path) ----------
+from concurrent.futures import ThreadPoolExecutor
+
+
+def _parse_feed(u):
+    try:
+        return feedparser.parse(u, agent=UA).entries[:15]
+    except Exception:
+        return []
+
+
+def fetch_news_parallel(max_age_h=6):
+    cutoff = datetime.now(timezone.utc) - timedelta(hours=max_age_h)
+    urls = [gnews(q) for q in QUERIES] + EXTRA_FEEDS
+    with ThreadPoolExecutor(max_workers=len(urls)) as ex:
+        feeds = list(ex.map(_parse_feed, urls))
+    seen, out = set(), []
+    for entries in feeds:
+        for e in entries:
+            title = " ".join(str(e.get("title", "")).split())
+            pp = e.get("published_parsed")
+            if not title or not pp:
+                continue
+            ts = datetime(*pp[:6], tzinfo=timezone.utc)
+            if ts < cutoff:
+                continue
+            hid = hashlib.sha1(title.lower().encode()).hexdigest()[:12]
+            if hid in seen:
+                continue
+            seen.add(hid)
+            out.append({"id": hid, "title": title, "link": e.get("link", ""), "ts": ts.isoformat()})
+    out.sort(key=lambda x: x["ts"], reverse=True)
+    return out
+
+
+def snapshots_parallel():
+    with ThreadPoolExecutor(max_workers=len(WATCH)) as ex:
+        res = list(ex.map(snapshot, WATCH.values()))
+    return {k: s for k, s in zip(WATCH, res) if s}
+
+
 # ---------- AI explain ----------
 def analyse(llm, market_lines, clean):
     data = json.dumps({"market": market_lines, "headlines": [{"id": i, "text": t} for i, t in clean]},
@@ -234,10 +275,7 @@ def main():
 
     snaps = {}
     if in_hours or a.force or a.simulate:
-        for k, sym in WATCH.items():
-            s = snapshot(sym)
-            if s:
-                snaps[k] = s
+        snaps.update(snapshots_parallel())
     if a.simulate and not snaps:
         snaps = {"NIFTY": {"price": 24500.0, "prev_close": 24800.0, "day": -1.2, "hour": -0.7},
                  "VIX": {"price": 18.5, "prev_close": 16.0, "day": 15.6, "hour": 3.0}}
@@ -245,7 +283,7 @@ def main():
     trig = triggers(snaps, 0.0 if a.simulate else 1.0)
     market = [f"{k}: {s['price']} ({s['day']:+.2f}% day, {s['hour']:+.2f}% last hour)" for k, s in snaps.items()]
 
-    items = fetch_news()
+    items = fetch_news_parallel()
     new = [h for h in items if h["id"] not in seen]
     print(f"{today} | in_hours={in_hours} | prices={len(snaps)} | headlines={len(items)} new={len(new)} | rules fired={len(trig)}")
 
