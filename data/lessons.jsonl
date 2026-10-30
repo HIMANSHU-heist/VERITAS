@@ -2,4 +2,4 @@
 {"date": "2026-10-27", "verdict": "GOOD", "lesson": "Trade only when the expected edge exceeds the cost threshold"}
 {"date": "2026-10-28", "verdict": "BAD", "lesson": "Abstain only when the expected edge is positive; a negative edge estimate led to missing a profitable trade."}
 {"date": "2026-10-29", "verdict": "BAD", "lesson": "Abstain when the expected edge is negative, even if the market moves positively."}
-{"date": "2026-10-30", "verdict": "BAD", "lesson": "Abstaining on a -0.0476% edge missed a +0.386% return; avoid abstaining when edge is near zero."}
+{"date": "2026-10-30", "verdict": "BAD", "lesson": "Abstaining on a -0.0476% edge missed a +0.386% return; avoid abstaining when edge is near zero and potential upside exists."}
