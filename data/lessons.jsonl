@@ -5,3 +5,4 @@
 {"date": "2026-10-30", "verdict": "BAD", "lesson": "Abstaining on a -0.0476% edge missed a +0.386% return; avoid abstaining when edge is near zero and potential upside exists."}
 {"date": "2026-11-03", "verdict": "BAD", "lesson": "Abstaining missed a +0.97% gain; consider that negative edge estimates can still precede positive moves."}
 {"date": "2026-11-04", "verdict": "BAD", "lesson": "Abstain only when the expected edge is clearly positive; a small negative edge led to missing a 0.92% gain."}
+{"date": "2026-11-05", "verdict": "BAD", "lesson": "Abstain only when the expected edge is below the threshold; a negative edge estimate that turns positive indicates the model missed a trade."}
