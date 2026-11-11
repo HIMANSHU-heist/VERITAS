@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#131722">
+<title>VERITAS · Agents</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<style>
+:root{--bg:#131722;--pn:#1e222d;--bd:#2a2e39;--tx:#d1d4dc;--mu:#8b94a7;--g:#26a69a;--r:#ef5350;--a:#f5a623;--b:#2962ff;--v:#9b7bff}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--tx);font:14px/1.5 Inter,system-ui,sans-serif;min-height:100vh}
+.wrap{max-width:1120px;margin:0 auto;padding:18px 14px 90px}
+h1{font-size:24px;font-weight:800}.sub{color:var(--mu);margin:4px 0 14px}
+h3{font-size:15px;margin:20px 0 8px}h3 small{color:var(--mu);font-weight:500;margin-left:6px}
+.mono{font-family:"JetBrains Mono",monospace}.pos{color:var(--g)}.neg{color:var(--r)}
+.tabs{display:flex;gap:2px;overflow-x:auto;border-bottom:1px solid var(--bd);margin:16px 0 14px;position:sticky;top:48px;background:var(--bg);z-index:5}
+.tabs button{background:none;border:0;border-bottom:2px solid transparent;color:var(--mu);padding:11px 14px;font:600 13px Inter;cursor:pointer;white-space:nowrap}
+.tabs button.on{color:var(--tx);border-color:var(--b)}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin:14px 0 10px}
+.chip{background:none;border:1px solid var(--bd);color:var(--mu);padding:4px 12px;border-radius:99px;font:600 12px Inter;cursor:pointer}
+.chip.on{background:var(--b);border-color:var(--b);color:#fff}
+.grid{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}
+.cols{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.card{background:var(--pn);border:1px solid var(--bd);border-radius:12px;padding:12px 14px}
+.ag{border-left:3px solid var(--bd)}.ag.ok{border-left-color:var(--g)}.ag.warn{border-left-color:var(--a)}.ag.bad{border-left-color:var(--r)}
+.ah{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.role{color:var(--mu);font-size:12.5px;margin:4px 0 8px}
+.st{display:flex;align-items:center;gap:6px}.st small{color:var(--mu);font-weight:700;letter-spacing:.08em;font-size:10px}
+.dot{width:8px;height:8px;border-radius:50%;background:#4a5163}.dot.ok{background:var(--g)}.dot.warn{background:var(--a)}.dot.bad{background:var(--r)}
+.o{margin-top:6px;font-size:12.5px;color:#b7bdca;word-break:break-word}
+.badge{font-size:10px;font-weight:700;letter-spacing:.08em;padding:2px 8px;border-radius:99px;border:1px solid currentColor}
+.tAI{color:var(--v)}.tCode{color:#5aa9ff}.tML{color:var(--a)}.tRules{color:var(--g)}.tBear{color:var(--r)}
+.flow{display:flex;flex-wrap:wrap;gap:6px;align-items:center}.arr{color:var(--mu)}
+.step{font-size:12px;font-weight:600;padding:5px 10px;border-radius:8px;background:var(--pn);border:1px solid var(--g);color:var(--g)}
+.step.off{border-color:var(--bd);color:var(--mu)}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}.tbl th{color:var(--mu);text-align:left;padding:7px 8px;border-bottom:1px solid var(--bd)}.tbl td{padding:7px 8px;border-bottom:1px solid #1c2030}
+.li{padding:8px 0;border-bottom:1px solid #1c2030}.li:last-child{border:0}.li p{margin-top:4px}
+.note{color:var(--mu);font-size:12.5px;margin:10px 0}.empty{color:var(--mu);text-align:center;padding:28px;line-height:1.9}
+code{font-family:"JetBrains Mono",monospace;background:#0f131d;padding:2px 8px;border-radius:6px}
+.foot{margin-top:30px;text-align:center;color:var(--mu);font-size:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Agents</h1>
+  <p class="sub">Language models only explain or say no. They never flip a trade. The C++ risk engine has the final say.</p>
+  <div class="kg" id="kpi"></div>
+  <div class="tabs" id="tabs"></div>
+  <div id="body"><div class="empty">Loading...</div></div>
+  <p class="foot">Paper-trading research demo. No real orders. Not investment advice.</p>
+</div>
+<script>
+(async () => {
+const $ = s => document.querySelector(s);
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const J = u => fetch(u + "?t=" + Date.now()).then(r => r.ok ? r.json() : null).catch(() => null);
+const inr = n => (n < 0 ? "-" : "") + "₹" + Math.abs(Math.round(n)).toLocaleString("en-IN");
+const num = (n, d = 2) => n == null || isNaN(n) ? "–" : Number(n).toLocaleString("en-IN", {minimumFractionDigits: d, maximumFractionDigits: d});
+const [A, T, V, LS, W] = await Promise.all(["agents", "today", "veto", "lessons", "watch"].map(n => J("data/" + n + ".json")));
+const a = A || {}, c = T && T.card, ls = LS || [], gf = (c && c.gate_failed) || [], heads = (W && W.headlines) || [];
+const kv = (k, v, cls) => `<div class="kp"><small>${esc(k)}</small><b class="${cls || ""}">${v}</b></div>`;
+const empty = (m, cmd) => `<div class="card empty">${esc(m)}${cmd ? `<br><code>${esc(cmd)}</code>` : ""}</div>`;
+
+const ob = (c && c.red_team && c.red_team.objections) || [], veto = gf.includes("redteam_veto");
+const ag = (n, t, role, s, out) => ({n, t, role, s, out});
+const R = [
+ ag("Cue Agent", "AI", "Explains the overnight global-market score in plain words.", c && c.cue_reason ? "ok" : "idle",
+    c ? `Score ${num(c.cue_score, 3)}. ${c.cue_reason || "Not invoked: the day was gated before the AI stage."}` : null),
+ ag("News Agent", "AI", "Scores headlines after an injection filter.", c && c.news ? "ok" : "idle",
+    c && c.news ? `Score ${c.news.score}, confidence ${c.news.confidence}, ${c.news.headlines.length} headlines used.` : "No headlines scored on the latest card."),
+ ag("Strategist", "AI", "Proposes the model's direction or WAIT. Never flips a trade.", c && c.proposal ? "ok" : "idle",
+    c && c.proposal ? `${c.proposal.action}. ${c.proposal.thesis}` : "Runs only when ML and the cost gate pass."),
+ ag("Red-team", "AI", "Tries to falsify the trade. HIGH severity vetoes it.", !c || !c.red_team ? "idle" : veto ? "bad" : ob.length ? "warn" : "ok",
+    !c || !c.red_team ? "Not invoked." : (ob.length ? ob.map(o => o.severity + ": " + o.text).join(" | ") : "No objections.")),
+ ag("Reflection", "AI", "Writes one lesson per settled day; the last five feed the strategist.", ls.length ? "ok" : "idle",
+    ls.length ? ls[ls.length - 1].lesson : "No lessons yet. The first appears after a settled day."),
+ ag("Bull / Bear / Judge", "AI", "Debates the trade; the judge agrees or says WAIT.", a.debate ? (a.debate.judge.verdict === "WAIT" ? "warn" : "ok") : "idle",
+    a.debate ? `Judge: ${a.debate.judge.verdict}. ${a.debate.judge.reason}` : null),
+ ag("Market Watcher", "AI", "Intraday news and price rules; emails instant alerts.", W ? (W.alert ? "warn" : "ok") : "idle",
+    W ? (W.alert ? "Alert: " + ((W.alert.ai && W.alert.ai.headline) || W.alert.triggers.join("; ")) : `No alert. ${(W.rules_fired || []).length} rules fired, ${heads.length} headlines.`) : null),
+ ag("Regime", "Code", "Trending, sideways or volatile; scales confidence.", a.regime ? (a.regime.label === "VOLATILE" ? "warn" : "ok") : "idle",
+    a.regime ? `${a.regime.label} (x${a.regime.conf_mult}). ${a.regime.why}` : null),
+ ag("Dynamic Risk", "Code", "Shrinks position size under stress; never grows it.", a.risk ? (a.risk.scale < 1 ? "warn" : "ok") : "idle",
+    a.risk ? `Size x${a.risk.scale}. ${a.risk.why.join("; ")}` : null),
+ ag("Portfolio", "Code", "Inverse-volatility weights across four large caps.", a.portfolio ? (a.portfolio.avg_corr > 0.6 ? "warn" : "ok") : "idle",
+    a.portfolio ? Object.entries(a.portfolio.weights).map(e => e[0] + " " + Math.round(e[1] * 100) + "%").join(", ") + ". " + a.portfolio.flag : null),
+ ag("Levels", "Code", "Pivots, ATR and 20-day range for NIFTY.", a.levels ? "ok" : "idle",
+    a.levels ? `${a.levels.where}. Pivot ${num(a.levels.pivot)}, ATR ${a.levels.atr_pct}%.` : null),
+ ag("Scorecard", "Code", "Grades the live model: Brier score, hit rate, abstention.", a.scorecard && a.scorecard.n_settled >= 5 ? "ok" : "idle",
+    a.scorecard ? `${a.scorecard.n_settled} settled days. Brier ${a.scorecard.brier == null ? "n/a" : a.scorecard.brier}.` : null),
+ ag("Data Quality", "Code", "Checks every series for stale bars, gaps and jumps.", a.dataquality ? ({OK: "ok", WARN: "warn"}[a.dataquality.status] || "bad") : "idle",
+    a.dataquality ? `${a.dataquality.status}. ${a.dataquality.issues.length ? a.dataquality.issues.join("; ") : "All series fresh."}` : null),
+ ag("Drift Monitor", "ML", "Checks recent accuracy and conformal coverage.", a.drift ? (a.drift.status === "DRIFT" ? "bad" : "ok") : "idle",
+    a.drift ? `${a.drift.status}: accuracy ${a.drift.accuracy}, coverage ${a.drift.coverage} (target ${a.drift.target_coverage}).` : null),
+ ag("C++ Risk Gate", "Rules", "Final authority: costs, limits, kill-switch, audit chain.", c ? (c.decision === "TRADE" ? "ok" : "warn") : "idle",
+    c ? (gf.length ? "Blocked by: " + gf.join(", ") : "All gates passed.") + (c.audit_ok ? " Audit chain OK." : "") : null),
+ ag("Ask VERITAS", "AI", "Chat assistant (bottom right) answering from dashboard data.", "ok", "Rate-limited Cloudflare Worker.")
+];
+const LBL = {ok: "OK", warn: "CAUTION", bad: "ALERT", idle: "IDLE"};
+const card = x => `<div class="card ag ${x.s}"><div class="ah"><b>${esc(x.n)}</b><span class="badge t${x.t}">${x.t}</span></div><p class="role">${esc(x.role)}</p><div class="st"><span class="dot ${x.s}"></span><small>${LBL[x.s]}</small></div><p class="o">${esc(x.out || "Waiting for first run.")}</p></div>`;
+
+const active = R.filter(x => x.s !== "idle").length, alerts = R.filter(x => x.s === "warn" || x.s === "bad").length;
+$("#kpi").innerHTML = kv("Agents", R.length) + kv("Active on latest run", active) + kv("Need attention", alerts, alerts ? "neg" : "pos") +
+  kv("Latest decision", c ? esc(c.decision) : "–") + kv("Card date", c ? esc(c.date) : "–");
+
+let filt = "All";
+function overview() {
+  const flow = [["Data clock", 1], ["Features + ML", 1], ["Conformal", 1], ["C++ pre-gates", 1], ["AI agents", c && c.proposal], ["C++ final", 1], ["Decision card", 1], ["Settle", 1], ["Reflect", ls.length]];
+  const FT = ["All", "AI", "Code", "ML", "Rules"];
+  return `<div class="flow">${flow.map((x, i) => (i ? '<span class="arr">→</span>' : "") + `<span class="step${x[1] ? "" : " off"}">${x[0]}</span>`).join("")}</div>` +
+    `<div class="chips">${FT.map(x => `<button class="chip${x === filt ? " on" : ""}" data-f="${x}">${x}</button>`).join("")}</div>` +
+    `<div class="grid">${R.filter(x => filt === "All" || x.t === filt).map(card).join("")}</div>`;
+}
+function debateTab() {
+  const d = a.debate;
+  if (!d) return empty("No debate yet. It is generated by the morning run.", "python -m python.agent_report");
+  const col = (t, k, x) => `<div class="card"><span class="badge ${k}">${t}</span><p style="margin:8px 0">${esc(x.argument)}</p><small>Strength ${num(x.strength, 2)}</small></div>`;
+  return `<div class="cols">${col("Bull", "tCode", d.bull)}${col("Bear", "tBear", d.bear)}<div class="card"><span class="badge tAI">Judge</span><h3 style="margin:8px 0">${esc(d.judge.verdict)}</h3><p>${esc(d.judge.reason)}</p></div></div><p class="note">The judge may only agree with the model direction or say WAIT. It cannot flip a trade.</p>`;
+}
+function memory() {
+  if (!ls.length) return empty("No lessons yet. One lesson is written after each settled day.", "python -m python.reflect");
+  return `<p class="note">The latest five lessons are added to tomorrow's strategist prompt, only to make it more cautious.</p><div class="card">` +
+    ls.slice().reverse().map(r => `<div class="li"><span class="badge ${r.verdict === "GOOD" ? "tRules" : r.verdict === "BAD" ? "tBear" : "tML"}">${esc(r.verdict)}</span> <small>${esc(r.date)}</small><p>${esc(r.lesson)}</p></div>`).join("") + `</div>`;
+}
+function news() {
+  const used = c && c.news ? c.news.headlines.map(h => h.text) : [];
+  const list = heads.length ? heads.map(h => h.title) : used;
+  if (!list.length) return empty("No headlines yet.", "python -m python.watcher --force");
+  return `<p class="note">Headlines are filtered for prompt injection before any model sees them.${c && c.news ? ` Latest card: score ${c.news.score}, confidence ${c.news.confidence}.` : ""}</p><div class="card">${list.slice(0, 20).map(t => `<div class="li">${esc(t)}</div>`).join("")}</div>`;
+}
+function vetoTab() {
+  if (!V) return empty("No veto report yet.", "python -m python.veto_report && python -m python.export_extras");
+  return `<div class="kg">${kv("Vetoes", V.n_vetoes)}${kv("Were right", V.good_vetoes + " (" + Math.round((V.good_veto_rate || 0) * 100) + "%)")}${kv("Losses avoided", inr(V.loss_avoided_inr), "pos")}${kv("Profit missed", inr(-V.profit_missed_inr), "neg")}${kv("Net effect", inr(V.net_effect_inr), V.net_effect_inr >= 0 ? "pos" : "neg")}</div>` +
+    `<div class="card" style="margin-top:10px;overflow-x:auto"><table class="tbl"><tr><th>Date<th>Side<th>Move<th>Would have made<th>Veto</tr>` +
+    V.days.slice().reverse().map(r => `<tr><td>${esc(r.date)}<td>${esc(r.side)}<td>${r.ret_oc_pct}%<td class="${r.would_be_net >= 0 ? "pos" : "neg"}">${inr(r.would_be_net)}<td>${r.veto_was === "GOOD" ? "Right" : "Wrong"}</tr>`).join("") + `</table></div>`;
+}
+function insights() {
+  let h = "";
+  if (a.levels) {
+    const L = a.levels;
+    h += `<h3>NIFTY levels <small>as of ${esc(L.asof)} · ${esc(L.where)}</small></h3><div class="card" style="overflow-x:auto"><table class="tbl"><tr><th>Level<th>NIFTY<th>ETF proxy (÷100)</tr>` +
+      [["R2", "r2"], ["R1", "r1"], ["Pivot", "pivot"], ["S1", "s1"], ["S2", "s2"], ["20-day high", "hi20"], ["20-day low", "lo20"], ["Close", "close"]]
+        .map(r => `<tr><td>${r[0]}<td class="mono">${num(L[r[1]])}<td class="mono">${num(L[r[1]] / 100)}</tr>`).join("") +
+      `</table><p class="note">ATR ${num(L.atr)} (${L.atr_pct}% of price). A volatility-based stop would be about ${L.suggested_stop_pct}%, a target about ${L.suggested_target_pct}%. Information only.</p></div>`;
+  }
+  if (a.scorecard) {
+    const s = a.scorecard;
+    h += `<h3>Live scorecard <small>${esc(s.status)}</small></h3><div class="kg">` + kv("Settled days", s.n_settled) + kv("Trades", s.n_trades) +
+      kv("Abstain rate", s.abstain_rate == null ? "–" : Math.round(s.abstain_rate * 100) + "%") + kv("Net P&L", inr(s.net_total), s.net_total >= 0 ? "pos" : "neg") +
+      kv("Win rate", s.win_rate == null ? "–" : Math.round(s.win_rate * 100) + "%") + kv("Brier", s.brier == null ? "–" : s.brier) +
+      kv("Shadow hit rate", s.shadow_hit_rate == null ? "–" : Math.round(s.shadow_hit_rate * 100) + "%") + `</div><p class="note">${esc(s.note)}</p>`;
+  }
+  if (a.dataquality) {
+    h += `<h3>Data quality <small>${esc(a.dataquality.status)}</small></h3><div class="card" style="overflow-x:auto"><table class="tbl"><tr><th>Series<th>Last bar<th>Age (days)<th>Rows<th>Flags</tr>` +
+      a.dataquality.series.map(s => `<tr><td>${esc(s.name)}<td class="mono">${esc(s.last)}<td>${s.age_days}<td>${s.rows}<td class="${s.flags.length ? "neg" : "pos"}">${esc(s.flags.join(", ") || "ok")}</tr>`).join("") + `</table></div>`;
+  }
+  const mini = [];
+  if (a.regime) mini.push(["Regime", `${a.regime.label}, confidence x${a.regime.conf_mult}. ${a.regime.why}. Adjusted P(up) ${a.regime.adj_p_up}.`]);
+  if (a.risk) mini.push(["Dynamic risk", `Size x${a.risk.scale}. ${a.risk.why.join("; ")}. Drawdown ${a.risk.drawdown_pct}%, losing streak ${a.risk.streak}.`]);
+  if (a.portfolio) mini.push(["Portfolio", `Average correlation ${a.portfolio.avg_corr}. ${a.portfolio.flag}.`]);
+  if (a.drift) mini.push(["Drift", `${a.drift.status}. Accuracy ${a.drift.accuracy}, coverage ${a.drift.coverage}. ${a.drift.action}.`]);
+  if (mini.length) h += `<h3>Other advisory agents</h3><div class="grid">` + mini.map(m => `<div class="card"><b>${m[0]}</b><p class="o">${esc(m[1])}</p></div>`).join("") + `</div>`;
+  return h || empty("No insight data yet.", "python -m python.agent_report");
+}
+
+const TABS = [["overview", "Overview", overview], ["debate", "Debate", debateTab], ["memory", "Memory", memory],
+              ["news", "News", news], ["veto", "Veto tracker", vetoTab], ["insights", "Insights", insights]];
+function render() {
+  const id = (location.hash || "#overview").slice(1);
+  const t = TABS.find(x => x[0] === id) || TABS[0];
+  $("#tabs").innerHTML = TABS.map(x => `<button class="${x[0] === t[0] ? "on" : ""}" data-t="${x[0]}">${x[1]}</button>`).join("");
+  $("#body").innerHTML = t[2]();
+}
+document.addEventListener("click", e => {
+  const b = e.target.closest("button");
+  if (!b) return;
+  if (b.dataset.t) location.hash = b.dataset.t;
+  else if (b.dataset.f) { filt = b.dataset.f; render(); }
+});
+window.addEventListener("hashchange", render);
+render();
+})();
+</script>
+<script src="nav.js"></script>
+<script>window.VERITAS_CHAT_API="https://veritas-chat.himanshu-veritas.workers.dev"</script>
+<script src="chat.js"></script>
+</body>
+</html>
