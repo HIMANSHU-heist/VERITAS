@@ -55,7 +55,7 @@ h1 span{background:linear-gradient(90deg,#5aa9ff,#9b7bff,#2ee6a6);-webkit-backgr
 </head>
 <body>
 <div class="wrap">
-  <div class="top"><a href="./">&larr; Dashboard</a><a href="subscribe.html">Email alerts</a></div>
+  
   <h1>How <span>VERITAS</span> decides</h1>
   <p class="lead">Every weekday at 08:30 IST a pipeline of data firewalls, machine learning, AI agents and a C++ risk engine decides whether to paper-trade, and logs why. Most days the answer is "no", on purpose.</p>
   <div class="bar"><button class="btn" id="play">&#9654; Replay today's decision</button><span class="st" id="st">loading...</span><span class="st">Tap any block for details</span></div>
@@ -71,7 +71,8 @@ h1 span{background:linear-gradient(90deg,#5aa9ff,#9b7bff,#2ee6a6);-webkit-backgr
 const LAYERS=[
 {k:'t',c:'#5aa9ff',t:'Triggers',s:'GitHub Actions, fully automatic',n:[
  {id:'n_m',i:'⏰',n:'Morning run',s:'Mon-Fri · 08:30 IST',f:'morning.yml',d:'Builds the C++ engine, downloads fresh data, makes the day\'s decision, emails subscribers, saves the card and redeploys the site.',p:['cron 03:00 UTC','GitHub Actions']},
- {id:'n_w',i:'👁️',n:'Market watch',s:'every 30 min · 09:45-15:15',f:'watch.yml',d:'Intraday watcher that can fire instant alerts while the market is open.',p:['cron','python.watcher']},
+ {id:'n_w',i:'👁️',n:'Market watch',s:'every 15 min · market hours',f:'watch.yml',d:'Intraday watcher that can fire instant alerts while the market is open.',p:['cron','python.watcher']},
+ {id:'n_p',i:'🧪',n:'Paper trader',s:'every 15 min · market hours',f:'paper.yml',d:'Runs every user paper account: executes approved orders, applies stop-loss, target and time exits, and asks for approval when a signal is unsure. Fake money only.',p:['Firestore','cron']},
  {id:'n_e',i:'🌆',n:'Evening recap',s:'Mon-Fri · 16:15 IST',f:'evening.yml',d:'Settles the day with the real NIFTY open-to-close and sends the recap.',p:['cron 10:45 UTC','settle.py']}]},
 {k:'d',c:'#22d3ee',t:'Data',s:'what the system is allowed to see',n:[
  {id:'n_y',i:'📥',n:'Market data',s:'12 series · 5y daily',f:'download_data.py',d:'NIFTY, four large caps, S&P 500, Nasdaq, Nikkei, crude, gold, USD/INR and India VIX. If any series fails, the run stops so no decision is made on stale data.',p:['yfinance','parquet']},
@@ -97,6 +98,14 @@ const LAYERS=[
  {id:'f_ks',i:'🚨',n:'Kill-switch',s:'daily loss 2% · drawdown 8%',f:'risk_engine.cpp',d:'Also trips on more than 5 orders per second. Once tripped, everything is blocked.',p:['hard stop']},
  {id:'f_dec',i:'✅',n:'Decision card',s:'TRADE or ABSTAIN',f:'daily.py',d:'Every card carries the gates that fired and a counterfactual such as "would trade if edge was above 0.146%".',p:['counterfactual']},
  {id:'f_aud',i:'⛓️',n:'Audit chain',s:'SHA-256 hash-chained',f:'live_audit/*.jsonl',d:'Each log line hashes the previous one. Edit any past line and verification reports BROKEN.',p:['tamper-evident']}]},
+{k:'adv',c:'#22d3ee',t:'Advisory agents',s:'dashboard only, they never place trades',n:[
+ {id:'v_reg',i:'🧭',n:'Regime',s:'trending, sideways, volatile',f:'agents/regime.py',d:'Classifies the market and scales confidence down in sideways or volatile regimes.',p:['code only']},
+ {id:'v_risk',i:'🎚️',n:'Dynamic risk',s:'size can only shrink',f:'agents/risk_agent.py',d:'Cuts position size under high VIX, drawdown or a losing streak. Never grows it.',p:['code only']},
+ {id:'v_lvl',i:'📐',n:'Levels',s:'pivots, ATR, range',f:'agents/levels.py',d:'Classic pivot levels, ATR and the 20-day range, with a volatility-based stop and target suggestion.',p:['code only']},
+ {id:'v_sc',i:'🎓',n:'Scorecard',s:'grades the live model',f:'agents/scorecard.py',d:'Brier score, shadow hit rate, abstain rate and net P&L over settled live days.',p:['Brier score']},
+ {id:'v_dq',i:'🩺',n:'Data quality',s:'12 series checked',f:'agents/dataquality.py',d:'Flags stale bars, missing closes, duplicate dates and suspicious jumps.',p:['fail early']},
+ {id:'v_dr',i:'📉',n:'Drift monitor',s:'accuracy and coverage',f:'agents/drift.py',d:'Warns when recent accuracy or conformal coverage degrades.',p:['conformal coverage']},
+ {id:'v_deb',i:'⚔️',n:'Bull, Bear, Judge',s:'debate',f:'agents/debate.py',d:'Two LLMs argue for and against; a judge may only agree or WAIT.',p:['gpt-oss']}]},
 {k:'o',c:'#5aa9ff',t:'Outputs',s:'what you see and receive',n:[
  {id:'o_set',i:'🧾',n:'Settle',s:'real close, paper P&L',f:'settle.py',d:'After the market closes, the real NIFTY open-to-close is applied to the day\'s card.',p:['paper P&L']},
  {id:'o_dash',i:'📊',n:'Dashboard',s:'Firebase Hosting',f:'web/index.html',d:'TradingView-style terminal with candles, trade markers, equity curves and the agent pipeline for any day.',p:['Lightweight Charts']},
@@ -152,5 +161,6 @@ $('#play').onclick=play;
   $('#st').textContent=card?('Today '+card.date+': '+card.decision+((card.gate_failed||[]).length?' · blocked by '+card.gate_failed.join(', '):'')):'No live card yet';
 })();
 </script>
+<script src="nav.js"></script>
 </body>
 </html>

@@ -7,6 +7,7 @@
 <title>VERITAS Terminal</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
+<link rel="stylesheet" href="shared.css">
 <style>
 :root{--bg:#131722;--pn:#1e222d;--pn2:#171b26;--bd:#2a2e39;--tx:#d1d4dc;--mut:#8b94a7;--g:#26a69a;--r:#ef5350;--b:#2962ff;--a:#f5a623;--v:#9b7bff}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -65,16 +66,17 @@ tr.clk{cursor:pointer}tr.clk:hover td{background:#1a1f2c}tr.sel td{background:#1
 </head>
 <body>
 <div class="hdr">
-  <div class="brand"><i></i>VERITAS</div>
+  
   <div class="sym"><b>NIFTYBEES</b> <span>· Nifty÷100 · PAPER</span></div>
   <div class="px mono" id="hpx">—</div>
   <div class="mono" style="color:var(--mut)">VIX <b id="hvix" style="color:var(--tx)">—</b></div>
   <span class="pill ab" id="hpill">—</span>
   <div class="sp"></div>
   <div style="color:var(--mut)" id="hwin"></div>
-  <a class="lnk" href="portfolio.html">Portfolio</a><a class="lnk" href="flow.html">How it works</a><a class="lnk" href="subscribe.html">Get email alerts</a>
+  
 </div>
 
+<div id="kpis" class="kpis"></div>
 <div class="term">
   <section>
     <div class="tb">
@@ -118,6 +120,12 @@ if(live){$('#hpx').textContent='₹'+f(live.price);$('#hvix').textContent=f(live
   const k=live.decision==='TRADE'?'t':live.decision==='ABSTAIN'?'ab':'w';$('#hpill').className='pill '+k;$('#hpill').textContent=live.decision}
 else $('#hpill').textContent='NO LIVE CARD';
 if(data)$('#hwin').textContent='backtest '+data.summary.window[0]+' → '+data.summary.window[1];
+(function(){const k=$('#kpis');if(!k)return;const L=live,s=data&&data.summary;
+const tile=(a,b,c)=>'<div class="kp"><small>'+a+'</small><b class="'+(c||'')+'">'+b+'</b></div>';
+let h='';
+if(L)h+=tile('Today',esc(L.decision),L.decision==='TRADE'?'pos':'')+tile('P(up)',Math.round((L.p_up||0)*100)+'%')+tile('Edge',f(L.edge_pct,3)+'%')+tile('VIX',f(L.vix));
+if(s){const p=s.pipeline;h+=tile('Pipeline net','₹'+f(p.net_pnl),col(p.net_pnl))+tile('Buy&Hold','₹'+f(s.buy_hold.net_pnl),col(s.buy_hold.net_pnl))+tile('Sat out',Math.round(100*(s.n_days-p.n_trades)/s.n_days)+'%')+tile('Trades',p.n_trades);}
+k.innerHTML=h||'<div class="empty">No data yet.</div>';})();
 
 /* charts */
 const base={autoSize:true,layout:{background:{type:'solid',color:'#131722'},textColor:'#9aa4b5',fontFamily:'Inter,system-ui'},grid:{vertLines:{color:'#1a1e2b'},horzLines:{color:'#1a1e2b'}},rightPriceScale:{borderColor:'#2a2e39'},timeScale:{borderColor:'#2a2e39',rightOffset:4},crosshair:{mode:1}};
@@ -235,6 +243,6 @@ side(by[sel]);tabs();
 </script>
 <script>window.VERITAS_CHAT_API="https://veritas-chat.himanshu-veritas.workers.dev"</script>
 <script src="chat.js"></script>
-<script src="addons.js" defer></script>
+<script src="nav.js"></script>
 </body>
 </html>

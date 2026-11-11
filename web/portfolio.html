@@ -17,7 +17,6 @@
   dialog label{display:block;margin:10px 0 4px;color:var(--mu);font-size:13px}dialog input,dialog select{width:100%}
   .st{padding:1px 8px;border-radius:99px;border:1px solid currentColor;font-size:12px}
   </style></head><body>
-  <header><a href="./">&larr; Dashboard</a><b>VERITAS · Paper account</b></header>
   <main id="m">Loading…</main>
   <dialog id="dlg"></dialog>
   <script type="module">
@@ -86,7 +85,7 @@ function market() {
     box("Drift Monitor", "ML", dr ? dr.status + ": accuracy " + dr.accuracy + ", coverage " + dr.coverage : ""),
     box("C++ Risk Gate", "Hard rules", k ? (k.gate_failed && k.gate_failed.length ? "Blocked by: " + k.gate_failed.join(", ") : "All gates passed") + (k.audit_ok ? ". Audit chain OK" : "") : "")
   ];
-  return `<h3>Market</h3>${sig}<div class="c"><div class="row"><b>NIFTY 50</b><span class="k">${last ? last.close.toLocaleString("en-IN") : "-"}</span><span class="${cl(chg)}">${chg.toFixed(2)}%</span><small>NIFTYBEES last ${inr(S.acct.lastPrice || 0)}</small></div>${chart(c)}</div><h3>Agents</h3><div class="gr">` + boxes.join("") + `</div>`;
+  return `<h3>Market</h3>${sig}<div class="c"><div class="row"><b>NIFTY 50</b><span class="k">${last ? last.close.toLocaleString("en-IN") : "-"}</span><span class="${cl(chg)}">${chg.toFixed(2)}%</span><small>NIFTYBEES last ${inr(S.acct.lastPrice || 0)}</small></div>${chart(c)}</div><p class="mu" style="margin-top:10px"><a href="agents.html" style="color:#6d9bff">All agents and their latest output &rarr;</a></p>`;
 }
 
 function advise(kind) {
@@ -239,4 +238,4 @@ function draw() {
     on(doc(a, "settings", "prefs"), s => { if (s.exists()) S.prefs = s.data(); draw(); });
     list("orders", "ords"); list("fundreqs", "funds");
   });
-  </script></body></html>
+  </script><script src="nav.js"></script></body></html>

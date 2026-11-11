@@ -3,39 +3,48 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>VERITAS Alerts</title>
+<meta name="theme-color" content="#131722">
+<title>VERITAS · Email alerts</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-  body{font-family:system-ui,sans-serif;max-width:520px;margin:24px auto;padding:0 16px;line-height:1.5}
-  input[type=email],input[type=password]{width:100%;padding:10px;margin:6px 0;box-sizing:border-box}
-  button{padding:10px 14px;margin:6px 6px 6px 0;cursor:pointer}
-  .note{color:#555;font-size:13px} .msg{margin:10px 0;padding:8px;background:#f3f3f3;border-radius:6px}
-  label{display:block;margin:8px 0}
+:root{--bg:#131722;--pn:#1e222d;--bd:#2a2e39;--tx:#d1d4dc;--mu:#8b94a7;--g:#26a69a;--b:#2962ff}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--tx);font:15px/1.55 Inter,system-ui,sans-serif;min-height:100vh}
+.wrap{max-width:540px;margin:0 auto;padding:24px 16px 80px}
+h1{font-size:24px;font-weight:800}h3{margin:20px 0 8px;font-size:15px}
+.note{color:var(--mu);font-size:13px;margin:6px 0 16px}
+.card{background:var(--pn);border:1px solid var(--bd);border-radius:12px;padding:16px}
+input[type=email],input[type=password]{width:100%;padding:11px 12px;margin:6px 0;background:var(--bg);color:var(--tx);border:1px solid var(--bd);border-radius:8px;font:inherit}
+button{padding:10px 16px;margin:8px 8px 0 0;background:var(--pn);color:var(--tx);border:1px solid var(--bd);border-radius:8px;font:600 14px Inter;cursor:pointer}
+button#signup,button#save{background:var(--b);border-color:var(--b);color:#fff}
+label{display:flex;gap:10px;align-items:flex-start;margin:10px 0;color:var(--tx)}
+label input{margin-top:5px}
+.msg{margin:12px 0;padding:10px 12px;background:#2a2e39;border-left:3px solid var(--g);border-radius:6px;font-size:13.5px}
 </style>
 </head>
 <body>
-<p><a href="./">&larr; Dashboard</a></p><h2>VERITAS paper-trading alerts</h2>
-<p class="note">Educational paper-trading demo. No real orders are placed. Not investment advice.
-Emails describe what a software model decided and why, including when it chose NOT to trade.</p>
+<main class="wrap">
+<h1>Email alerts</h1>
+<p class="note">Educational paper-trading demo. No real orders are placed. Not investment advice. Emails describe what a software model decided and why, including when it chose NOT to trade.</p>
 <div id="msg" class="msg" hidden></div>
 
-<div id="authBox">
+<div id="authBox" class="card">
   <input id="email" type="email" placeholder="Email" autocomplete="email">
   <input id="pw" type="password" placeholder="Password (min 6 chars)" autocomplete="current-password">
-  <button id="signup">Sign up</button>
-  <button id="login">Log in</button>
+  <button id="signup">Sign up</button><button id="login">Log in</button>
 </div>
 
-<div id="appBox" hidden>
+<div id="appBox" class="card" hidden>
   <p>Signed in as <b id="who"></b> &middot; email verified: <b id="ver"></b></p>
   <button id="resend" hidden>Resend verification email</button>
   <button id="refresh">I verified, refresh</button>
   <h3>Email preferences</h3>
-  <label><input type="checkbox" id="optIn"> I agree to receive VERITAS paper-trading emails (you can untick this any time)</label>
-  <label><input type="checkbox" id="digest" checked> Daily decision digest + evening recap</label>
-  <label><input type="checkbox" id="instant" checked> Instant alerts (trade approved, red-team veto, VIX stress, safety stop)</label>
-  <button id="save">Save preferences</button>
-  <button id="logout">Log out</button>
+  <label><input type="checkbox" id="optIn"><span>I agree to receive VERITAS paper-trading emails (untick any time)</span></label>
+  <label><input type="checkbox" id="digest" checked><span>Daily decision digest and evening recap</span></label>
+  <label><input type="checkbox" id="instant" checked><span>Instant alerts: trade approved, red-team veto, VIX stress, safety stop</span></label>
+  <button id="save">Save preferences</button><button id="logout">Log out</button>
 </div>
+</main>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
@@ -94,5 +103,6 @@ async function render(u) {
 }
 onAuthStateChanged(auth, render);
 </script>
+<script src="nav.js"></script>
 </body>
 </html>
