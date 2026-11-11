@@ -1,0 +1,25 @@
+name: deploy-web
+on:
+  push:
+    branches: [main]
+    paths: ["web/**", "!web/data/**", "firebase.json"]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: veritas-deploy
+  cancel-in-progress: true
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - name: Deploy Firebase Hosting
+        env:
+          SA: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          echo "$SA" > "$RUNNER_TEMP/sa.json"
+          export GOOGLE_APPLICATION_CREDENTIALS="$RUNNER_TEMP/sa.json"
+          npx --yes firebase-tools@15 deploy --only hosting --project veritas-trading --non-interactive
+          rm -f "$RUNNER_TEMP/sa.json"

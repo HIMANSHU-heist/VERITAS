@@ -1,0 +1,6 @@
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:8px;padding:10px 12px;background:#131722;border-bottom:1px solid #2a2e39}
+.kg{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}
+.kp{background:#1e222d;border:1px solid #2a2e39;border-radius:8px;padding:8px 12px}
+.kp small{display:block;color:#8b94a7;font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+.kp b{font-size:18px;font-weight:700}
+.kpis .empty{color:#8b94a7;padding:6px}
