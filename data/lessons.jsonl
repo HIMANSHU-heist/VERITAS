@@ -7,3 +7,4 @@
 {"date": "2026-11-04", "verdict": "BAD", "lesson": "Abstain only when the expected edge is clearly positive; a small negative edge led to missing a 0.92% gain."}
 {"date": "2026-11-05", "verdict": "BAD", "lesson": "Abstaining prevented capturing a positive 0.65% return; ensure edge estimates reflect actual market moves before skipping trades."}
 {"date": "2026-11-06", "verdict": "BAD", "lesson": "Abstain when edge is negative, even if outcome later turns positive"}
+{"date": "2026-11-11", "verdict": "BAD", "lesson": "Do not trade when the edge percentage is low, as it often leads to losses."}
