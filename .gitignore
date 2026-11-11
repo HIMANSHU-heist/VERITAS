@@ -10,8 +10,5 @@ data/raw/
 audit/
 outbox/
 .firebase/
-<<<<<<< Updated upstream
-=======
 worker/.wrangler/
->>>>>>> Stashed changes
 data/alerts_sent.jsonl
