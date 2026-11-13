@@ -9,3 +9,4 @@
 {"date": "2026-11-06", "verdict": "BAD", "lesson": "Abstain when edge is negative, even if outcome later turns positive"}
 {"date": "2026-11-11", "verdict": "BAD", "lesson": "Avoid trading when edge_pct is low (0.1804) and predicted win probability (p_up) is below 0.8, as it led to a -93.52 loss."}
 {"date": "2026-11-12", "verdict": "GOOD", "lesson": "Abstain when the expected edge is negative, even if the market moves positively."}
+{"date": "2026-11-13", "verdict": "GOOD", "lesson": "Abstain when agent disagreement flags uncertainty to avoid negative returns"}
